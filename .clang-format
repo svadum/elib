@@ -1,0 +1,35 @@
+#Generated from Visual Studio settings
+---
+BasedOnStyle: gnu
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  AfterFunction: true
+BreakBeforeBraces: Custom
+ColumnLimit: 0
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+NamespaceIndentation: All
+TabWidth: 2
+PointerAlignment: Left
+BreakConstructorInitializers: BeforeComma
+IndentCaseLabels: true
+Standard: Cpp11
+AlignEscapedNewlines: Left
+AllowShortCaseLabelsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: true
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 120
+AlwaysBreakAfterDefinitionReturnType: None
+SpaceAfterTemplateKeyword: false
+SpaceBeforeParens: ControlStatements
+SortIncludes: false
+AlignConsecutiveAssignments: true
+Cpp11BracedListStyle: true
+...

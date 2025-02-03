@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{25446b10-954d-4ffc-9ce8-0bd5d0a5b33f}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\array.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\callback.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\circular_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\memory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\span.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\core_clock.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\deadline_timer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\elapsed_timer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\system_clock.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\timer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\system_clock.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp" />
+  </ItemGroup>
+</Project>

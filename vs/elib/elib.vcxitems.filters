@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="time">
+      <UniqueIdentifier>{df3059c8-3215-432e-8092-90bcbe0bf439}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\core_clock.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\deadline_timer.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\elapsed_timer.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\system_clock.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\timer.h">
+      <Filter>time</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp">
+      <Filter>time</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\system_clock.cpp">
+      <Filter>time</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

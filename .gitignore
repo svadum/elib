@@ -1,0 +1,82 @@
+# CMake build files
+/CMakeCache.txt
+/CMakeFiles/
+/CMakeScripts/
+/cmake_install.cmake
+/Makefile
+/*.cmake
+
+# Build directories (both for CMake and make)
+build/
+out/
+bin/
+obj/
+
+# Visual Studio specific files
+.vs/
+.vs2019/
+.vs2017/
+.vs2015/
+.vs2013/
+.vs2012/
+.vs2010/
+*.vcxproj*
+*.vcproj*
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code files (retain .vscode folder)
+.vscode/*
+!.vscode/settings.json  # Optionally keep VSCode settings if needed
+!.vscode/tasks.json     # Optionally keep task configurations
+!.vscode/launch.json    # Optionally keep launch configurations
+
+# MacOS generated files
+.DS_Store
+
+# Windows generated files
+Thumbs.db
+
+# Eclipse/IntelliJ files
+.project
+.cproject
+.settings/
+
+# Backup files (e.g., from editors)
+*~
+*.bak
+*.swp
+*.sublime-workspace
+*.sublime-project
+
+# IDE-specific files
+*.user
+*.userprefs
+*.suo
+*.ncb
+*.opt
+*.log
+
+# Catch2 testing output (if built separately)
+test_output/
+
+# Specific object files (e.g., for embedded projects, different toolchains)
+*.o
+*.a
+*.so
+*.lib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.elf
+*.bin
+
+# System files
+*.exe~
+*.log
+
