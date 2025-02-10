@@ -53,13 +53,23 @@ namespace elib::memory
       }
     }
 
+    bool is_constructed() const noexcept
+    {
+      return constructed;
+    }
+
+    T& get() noexcept
+    {
+      return *std::launder(reinterpret_cast<T*>(&storage));
+    }
+
+    const T& get() const noexcept
+    {
+      return *std::launder(reinterpret_cast<const T*>(&storage));
+    }
+
   private:
     bool constructed{false};
     alignas(T) std::byte storage[sizeof(T)]{};
-
-    T& get()
-    {
-      return *(std::launder(reinterpret_cast<T*>(storage)));
-    }
   };
 }

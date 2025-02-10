@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <array>
 #include <iterator>
+#include <algorithm>
 
 namespace elib
 {
@@ -72,7 +73,7 @@ namespace elib
       clear();
 
       std::swap(m_data, other.m_data);
-      std::swap(m_end, other.m_last);
+      std::swap(m_end, other.m_end);
 
       return *this;
     }
@@ -195,6 +196,16 @@ namespace elib
       return *(end() - 1);
     }
 
+    constexpr pointer data() noexcept
+    {
+      return m_data.data();
+    }
+
+    constexpr const_pointer data() const noexcept
+    {
+      return m_data.data();
+    }
+
     constexpr size_type size() const noexcept
     {
       return m_end - m_data.begin();
@@ -272,16 +283,17 @@ namespace elib
       return insert(pos, ilist.begin(), ilist.end());
     }
 
-    constexpr iterator erase(iterator position)
+    constexpr iterator erase(const_iterator position)
     {
       if (!is_from_this(position) || empty())
         return end();
 
-      if (position == end())
+      if (position == cend())
         return end();
 
-      auto src  = position + 1;
-      auto dest = position;
+      iterator mutable_pos = begin() + (position - cbegin());
+      iterator src         = mutable_pos + 1;
+      iterator dest        = mutable_pos;
 
       while (src != m_end)
       {
@@ -292,7 +304,7 @@ namespace elib
 
       --m_end;
 
-      return !empty() ? position + 1 : m_end;
+      return !empty() ? mutable_pos + 1 : m_end;
     }
 
     template<typename T>
