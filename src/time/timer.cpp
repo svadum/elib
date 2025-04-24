@@ -39,6 +39,9 @@ namespace elib::time
 
   Timer::Id registerTimerImpl(config::TimerInterval interval, Timer::OnTimeout callback, bool singleShot = false)
   {
+    // NOTE: make sure Timer::Id type can represent entire timers range
+    static_assert(config::maxTimerNum <= std::numeric_limits<Timer::Id>::max());
+
     for (std::size_t index{0}; index < timers.size(); index++)
     {
       TimerHandle &timer = timers[index];
@@ -49,7 +52,7 @@ namespace elib::time
         timer.singleShot = singleShot;
         timer.registered = true;
 
-        return index;
+        return static_cast<Timer::Id>(index);
       }
     }
 

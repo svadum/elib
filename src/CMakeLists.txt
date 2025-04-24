@@ -18,9 +18,9 @@ add_library(elib STATIC
     time/timer.cpp
 )
 
-target_include_directories(elib PUBLIC
-    ${ELIB_INCLUDE_DIR}
-)
+target_include_directories(elib PUBLIC ${ELIB_INCLUDE_DIR})
+target_compile_features(elib PUBLIC cxx_std_17)
+set_target_properties(elib PROPERTIES CXX_EXTENSIONS OFF)
 
 # Set compiler options
 if(MSVC)

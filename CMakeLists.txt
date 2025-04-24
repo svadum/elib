@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Project information
-project(elib VERSION 1.0.1 LANGUAGES CXX)
+project(elib VERSION 1.0.2 LANGUAGES CXX)
 
-# Enable C++17
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Option to build tests (default to OFF)
