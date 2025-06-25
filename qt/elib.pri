@@ -8,6 +8,7 @@ HEADERS += \
   $$PWD/../include/elib/config.h \
   $$PWD/../include/elib/memory.h \
   $$PWD/../include/elib/span.h \
+  $$PWD/../include/elib/stream.h \
   $$PWD/../include/elib/version.h \
   $$PWD/../include/elib/time/core_clock.h \
   $$PWD/../include/elib/time/deadline_timer.h \

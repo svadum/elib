@@ -20,6 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\config.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\memory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\span.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\stream.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\core_clock.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\deadline_timer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\elapsed_timer.h" />
