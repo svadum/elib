@@ -22,6 +22,7 @@ add_executable(tests
   aligned_storage.cpp
   timer.cpp
   stream.cpp
+  circular_buffer.cpp
 )
 
 target_link_libraries(tests PRIVATE elib Catch2::Catch2WithMain trompeloeil::trompeloeil)

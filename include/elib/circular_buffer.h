@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////
-//          Copyright Vadym Senkiv 2024.
+//          Copyright Vadym Senkiv 2025.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,42 @@ namespace elib
 {
   namespace detail
   {
+    template<typename pointer>
+    constexpr void increment(pointer& it, pointer storage_begin, pointer storage_end)
+    {
+      if (++it == storage_end)
+        it = storage_begin;
+    }
+
+    template<typename pointer, typename difference_type>
+    constexpr pointer add(pointer ptr, difference_type n, pointer storage_begin, pointer storage_end)
+    {
+      static_assert(std::is_pointer_v<pointer>, "circular_buffer::add (internal): Pointer must be a pointer type");
+
+      const auto availableAtEnd = storage_end - ptr;
+      if (availableAtEnd > n)
+        return ptr + n;
+
+      const auto capacity = std::distance(storage_begin, storage_end);
+      return storage_begin + ((n - availableAtEnd) % capacity);
+    }
+
+    template<typename pointer, typename difference_type>
+    constexpr pointer sub(pointer ptr, difference_type n, pointer storage_begin, pointer storage_end)
+    {
+      static_assert(std::is_pointer_v<pointer>, "circular_buffer::sub (internal): Pointer must be a pointer type");
+
+      const auto capacity = std::distance(storage_begin, storage_end);
+      if (n > capacity)
+        n = n % capacity;
+
+      const auto availableAtFront = ptr - storage_begin;
+      if (availableAtFront >= n)
+        return ptr - n;
+
+      return storage_end - (n - availableAtFront);
+    }
+
     template<typename Container>
     struct nonconst_traits
     {
@@ -53,7 +89,7 @@ namespace elib
       using size_type         = typename Traits::size_type;
 
       constexpr circular_buffer_iterator() = default;
-      circular_buffer_iterator(const Buffer* buffer, const pointer it)
+      circular_buffer_iterator(Buffer* buffer, const pointer it)
         : m_buffer{buffer}
         , m_it{it}
       {
@@ -87,7 +123,7 @@ namespace elib
 
       constexpr circular_buffer_iterator& operator++()
       {
-        m_buffer->increment(m_it);
+        increment(m_it, m_buffer->storage_begin(), m_buffer->storage_end());
         if (m_it == m_buffer->m_last)
           m_it = nullptr;
 
@@ -115,7 +151,7 @@ namespace elib
       }
 
     private:
-      const Buffer* m_buffer{nullptr};
+      Buffer* m_buffer{nullptr};
       pointer m_it{nullptr};
     };
   }
@@ -129,7 +165,7 @@ namespace elib
 
   public:
     using iterator       = detail::circular_buffer_iterator<circular_buffer, detail::nonconst_traits<circular_buffer>>;
-    using const_iterator = detail::circular_buffer_iterator<circular_buffer, detail::const_traits<circular_buffer>>;
+    using const_iterator = detail::circular_buffer_iterator<const circular_buffer, detail::const_traits<circular_buffer>>;
 
     using reference       = typename Data::reference;
     using const_reference = typename Data::const_reference;
@@ -196,7 +232,7 @@ namespace elib
       }
 
       m_size = il.size();
-      m_last = add(m_last, m_size);
+      m_last = detail::add(m_last, m_size, storage_begin(), storage_end());
     }
 
     template<typename T, std::size_t N>
@@ -206,7 +242,7 @@ namespace elib
       static_assert(N <= Capacity, "Array size more than container capacity");
 
       m_size = N;
-      m_last = add(m_last, N);
+      m_last = detail::add(m_last, N, storage_begin(), storage_end());
       std::copy(array, array + N, storage_begin());
     }
 
@@ -217,7 +253,7 @@ namespace elib
         return;
 
       m_size = size;
-      m_last = add(m_last, size);
+      m_last = detail::add(m_last, size, storage_begin(), storage_end());
       std::copy(data, data + size, storage_begin());
     }
 
@@ -298,7 +334,7 @@ namespace elib
         return false;
 
       *m_last = std::forward<T>(value);
-      increment(m_last);
+      detail::increment(m_last, storage_begin(), storage_end());
       ++m_size;
 
       return true;
@@ -318,7 +354,7 @@ namespace elib
       if (empty())
         return false;
 
-      increment(m_first);
+      detail::increment(m_first, storage_begin(), storage_end());
       --m_size;
 
       return true;
@@ -346,43 +382,19 @@ namespace elib
       return m_data.data();
     }
 
+    constexpr const_pointer storage_begin() const
+    {
+      return m_data.data();
+    }
+
     constexpr pointer storage_end()
     {
       return m_data.data() + m_data.size();
     }
 
-    template<typename Pointer>
-    constexpr void increment(Pointer& it)
+    constexpr const_pointer storage_end() const
     {
-      if (++it == (storage_begin() + Capacity))
-        it = storage_begin();
-    }
-
-    template<typename Pointer>
-    constexpr Pointer add(Pointer ptr, difference_type n)
-    {
-      static_assert(std::is_pointer_v<Pointer>, "circular_buffer::add (internal): Pointer must be a pointer type");
-
-      const auto availableAtEnd = storage_end() - ptr;
-      if (availableAtEnd > n)
-        return ptr + n;
-
-      return storage_begin() + ((n - availableAtEnd) % capacity());
-    }
-
-    template<typename Pointer>
-    constexpr Pointer sub(Pointer ptr, difference_type n)
-    {
-      static_assert(std::is_pointer_v<Pointer>, "circular_buffer::sub (internal): Pointer must be a pointer type");
-
-      if (n > Capacity)
-        n = n % Capacity;
-
-      const auto availableAtFront = ptr - storage_begin();
-      if (availableAtFront >= n)
-        return ptr - n;
-
-      return storage_end() - (n - availableAtFront);
+      return m_data.data() + m_data.size();
     }
   };
 }
