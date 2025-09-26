@@ -9,8 +9,8 @@
 
 #include <cstdint>
 #include <functional>
-#include "elib/config.h"
-#include "elib/time/system_clock.h"
+#include <elib/config.h>
+#include <elib/time/system_clock.h>
 
 namespace elib::time
 {
@@ -26,6 +26,7 @@ namespace elib::time
     static void processTimers();
     static void unregisterTimers();
 
+    Timer();
     ~Timer();
 
     Timer(const Timer &) = delete;
@@ -50,6 +51,6 @@ namespace elib::time
   private:
     explicit Timer(Id id);
 
-    Id m_id{};
+    Id m_id;
   };
 }

@@ -11,9 +11,6 @@
 
 namespace elib::time
 {
-  // Callback: User has to provide cycle counter source
-  std::uint32_t getCoreCycleCounter();
-
   // NOTE: CoreClock is suitable for measuring relevantly small
   // time intervals because of its high precision (tick frequency)
   //
@@ -21,8 +18,15 @@ namespace elib::time
   // with coreFrequency = 170,000,000 32-bit counter will overflow
   // in ~25.26 seconds, so if you need to measure bigger intervals
   // of time choose less precise clock
+  //
+  // CycleCounter interface requirement:
+  //
+  //   CoreClock::rep CycleCounter::get() noexpect
+  //   {
+  //     return your_current_cycle_counter_value;
+  //   }
 
-  template<std::size_t clockFrequency>
+  template<std::size_t clockFrequency, typename CycleCounter>
   class CoreClock
   {
   public:
@@ -40,7 +44,7 @@ namespace elib::time
 
     static time_point now() noexcept
     {
-      return time_point{duration{getCoreCycleCounter()}};
+      return time_point{duration{CycleCounter::get()}};
     }
 
     static duration_from durationFromNow(duration duration)

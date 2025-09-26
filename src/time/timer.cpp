@@ -1,11 +1,11 @@
-#include "elib/time/timer.h"
+#include <elib/time/timer.h>
 
 #include <array>
 #include <numeric>
 #include <utility>
 
-#include "elib/time/system_clock.h"
-#include "elib/time/elapsed_timer.h"
+#include <elib/time/system_clock.h>
+#include <elib/time/elapsed_timer.h>
 
 namespace elib::time
 {
@@ -124,6 +124,12 @@ namespace elib::time
       return;
 
     getHandle(id) = TimerHandle{};
+  }
+
+  Timer::Timer()
+    : m_id{emptyTimerId}
+  {
+
   }
 
   Timer::Timer(Id id)

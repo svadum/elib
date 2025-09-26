@@ -34,8 +34,7 @@ namespace elib
 // by means of creating a "elib.tweaks.h" file.
 //
 // User has to:
-// 1. Add ELIB_USER_CONFIG to the compiler definition;
-// 2. Add path of a folder with the "elib.tweaks.h" to the compiler
+// 1. Add path of a folder with the "elib.tweaks.h" to the compiler
 //    include paths.
 //
 // NOTE: more details about library tweaks approach here:

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "3rdparty/span-lite/span.hpp"
+#include <elib/external/span-lite/span.hpp>
 
 namespace elib
 {

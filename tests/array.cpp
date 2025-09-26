@@ -99,3 +99,31 @@ TEST_CASE("array full() method", "[elib::array]") {
 
     REQUIRE(arr.full() == true);
 }
+
+TEST_CASE("array erase last", "[elib::array]") {
+    elib::array<int, 4> arr;
+
+    arr.push_back(1);
+    arr.push_back(2);
+    arr.push_back(3);
+
+    arr.erase(arr.end() - 1);
+
+    REQUIRE(arr.size() == 2);
+    REQUIRE(arr[0] == 1);
+    REQUIRE(arr[1] == 2);
+}
+
+TEST_CASE("array erase first", "[elib::array]") {
+    elib::array<int, 4> arr;
+
+    arr.push_back(1);
+    arr.push_back(2);
+    arr.push_back(3);
+
+    arr.erase(arr.begin());
+
+    REQUIRE(arr.size() == 2);
+    REQUIRE(arr[0] == 2);
+    REQUIRE(arr[1] == 3);
+}
