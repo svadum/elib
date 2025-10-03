@@ -1,17 +1,14 @@
 /////////////////////////////////////////////////////////////
-//          Copyright Vadym Senkiv 2024.
+//          Copyright Vadym Senkiv 2025.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 /////////////////////////////////////////////////////////////
 
-#pragma once
-
-#include <elib/external/span-lite/span.hpp>
+#include <elib/external/optional-lite/optional.hpp>
 
 namespace elib
 {
-  // NOTE: span-lite will switch to std::span if it's available
-  template<class T>
-  using span = nonstd::span<T>;
+  template<typename T>
+  using optional = nonstd::optional<T>;
 }

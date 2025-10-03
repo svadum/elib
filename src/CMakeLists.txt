@@ -6,6 +6,7 @@ add_library(elib STATIC
     ${ELIB_IMPL_INCLUDE_DIR}/array.h
     ${ELIB_IMPL_INCLUDE_DIR}/callback.h
     ${ELIB_IMPL_INCLUDE_DIR}/circular_buffer.h
+    ${ELIB_IMPL_INCLUDE_DIR}/expected.h
     ${ELIB_IMPL_INCLUDE_DIR}/span.h
     ${ELIB_IMPL_INCLUDE_DIR}/memory.h
     ${ELIB_IMPL_INCLUDE_DIR}/config.h
