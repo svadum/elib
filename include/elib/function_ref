@@ -5,16 +5,9 @@
 //          https://www.boost.org/LICENSE_1_0.txt)
 /////////////////////////////////////////////////////////////
 
-#pragma once
-
-#include <elib/external/expected-lite/expected.hpp>
+#include <elib/external/tl/function_ref.hpp>
 
 namespace elib
 {
-  // NOTE: expected-lite will switch to std::expected if it's available
-  template<class T, class E>
-  using expected = nonstd::expected<T, E>;
-
-  template<typename E>
-  using unexpected = nonstd::unexpected<E>;
+  using tl::function_ref;
 }
