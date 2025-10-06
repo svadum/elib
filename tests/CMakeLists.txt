@@ -23,6 +23,7 @@ add_executable(tests
   timer.cpp
   stream.cpp
   circular_buffer.cpp
+  external.cpp
 )
 
 target_link_libraries(tests PRIVATE elib Catch2::Catch2WithMain trompeloeil::trompeloeil)
