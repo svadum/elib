@@ -11,6 +11,7 @@ add_library(elib STATIC
     ${ELIB_IMPL_INCLUDE_DIR}/memory.h
     ${ELIB_IMPL_INCLUDE_DIR}/config.h
     ${ELIB_IMPL_INCLUDE_DIR}/stream.h
+    ${ELIB_IMPL_INCLUDE_DIR}/utility.h
     ${ELIB_IMPL_INCLUDE_DIR}/version.h
     ${ELIB_IMPL_INCLUDE_DIR}/time/core_clock.h
     ${ELIB_IMPL_INCLUDE_DIR}/time/system_clock.h

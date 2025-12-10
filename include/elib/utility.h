@@ -1,13 +1,20 @@
 /////////////////////////////////////////////////////////////
-//          Copyright Vadym Senkiv 2025.
+//          Copyright Vadym Senkiv 2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 /////////////////////////////////////////////////////////////
 
-#include <elib/external/SG14/inplace_function.h>
+#pragma once
 
 namespace elib
 {
-  using stdext::inplace_function;
+  // helper for a vistior pattern
+  template<class... Ts>
+  struct overloaded : Ts... {
+    using Ts::operator()...;
+  };
+
+  template<class... Ts>
+  overloaded(Ts...) -> overloaded<Ts...>;
 }

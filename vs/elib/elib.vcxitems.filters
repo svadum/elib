@@ -32,6 +32,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\function_ref.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\inplace_function.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\optional.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\utility.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp">

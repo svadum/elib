@@ -5,8 +5,8 @@
 #include <elib/optional.h>
 #include <elib/expected.h>
 #include <elib/span.h>
-#include <elib/function_ref>
-#include <elib/inplace_function>
+#include <elib/function_ref.h>
+#include <elib/inplace_function.h>
 
 
 TEST_CASE("elib::span availble & compiles", "[elib::external]") {
