@@ -219,3 +219,93 @@ TEST_CASE("Timer: Exhaust Timer Slots")
     auto extraTimer = Timer::registerTimer(milliseconds{10}, []() {});
     REQUIRE_FALSE(extraTimer.valid());
 }
+
+TEST_CASE("Timer: Update Callback via setCallback")
+{
+    bool firstCallbackExecuted = false;
+    bool secondCallbackExecuted = false;
+
+    auto timer = Timer::registerTimer(milliseconds{50}, [&]() {
+        firstCallbackExecuted = true;
+    });
+
+    timer.start();
+
+    // Change the callback before the timer fires
+    timer.setCallback([&]() {
+        secondCallbackExecuted = true;
+    });
+
+    advanceTime(50);
+
+    CHECK_FALSE(firstCallbackExecuted);
+    CHECK(secondCallbackExecuted);
+}
+
+TEST_CASE("Timer: setCallback preserves Timer state")
+{
+    int counter = 0;
+    auto timer = Timer::registerTimer(milliseconds{50}, [&]() { counter++; });
+
+    timer.start();
+    advanceTime(25); // Timer is halfway through its interval
+
+    // Update callback mid-run
+    timer.setCallback([&]() { counter += 10; });
+
+    advanceTime(25); // Complete the original 50ms
+    CHECK(counter == 10); // Should have triggered the NEW callback
+
+    advanceTime(50);
+    CHECK(counter == 20); // Periodic behavior should still work
+}
+
+TEST_CASE("Timer: setCallback handles Move Scenario")
+{
+    // This simulates what happens inside SerialSensorAPI move operations
+    int value = 0;
+
+    struct MockOwner {
+        int id;
+        Timer timer;
+        int& externalValue;
+
+        MockOwner(int id, int& val) : id(id), externalValue(val) {
+            timer = Timer::registerTimer(milliseconds{10}, [this]() {
+                externalValue = this->id;
+            });
+            timer.start();
+        }
+
+        // Manual move simulating the SerialSensorAPI fix
+        MockOwner(MockOwner&& other) noexcept 
+            : id(other.id), timer(std::move(other.timer)), externalValue(other.externalValue) 
+        {
+            timer.setCallback([this]() {
+                externalValue = this->id;
+            });
+        }
+    };
+
+    {
+        MockOwner owner1(42, value);
+
+        // Move owner1 to owner2. owner1's address is now invalid for the callback.
+        MockOwner owner2(std::move(owner1));
+
+        advanceTime(10);
+
+        // If setCallback worked, 'value' should be 42 (from owner2's context)
+        // and not a crash or garbage from owner1's old address.
+        CHECK(value == 42);
+    }
+}
+
+TEST_CASE("Timer: setCallback on Invalid Timer")
+{
+    Timer timer; // Unregistered/Invalid
+    REQUIRE_FALSE(timer.valid());
+
+    // This should not crash or cause side effects
+    timer.setCallback([]() { /* empty */ });
+}

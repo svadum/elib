@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Project information
-project(elib VERSION 1.5.0 LANGUAGES CXX)
+project(elib VERSION 1.6.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
-# if(MSVC)
-#     add_compile_options("/Zc:__cplusplus")
-# endif()
 
 # Option to build tests (default to OFF)
 option(ELIB_BUILD_TESTS "Build the test suite" OFF)

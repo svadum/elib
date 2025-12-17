@@ -38,6 +38,8 @@ namespace elib::time
     void setInterval(config::TimerInterval interval);
     config::TimerInterval interval() const;
 
+    void setCallback(OnTimeout callback);
+
     Id id() const;
 
     void start();

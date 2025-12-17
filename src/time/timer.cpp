@@ -169,6 +169,12 @@ namespace elib::time
     return getHandle(m_id).interval;
   }
 
+  void Timer::setCallback(OnTimeout callback)
+  {
+    if (valid())
+      getHandle(m_id).callback = std::move(callback);
+  }
+
   Timer::Id Timer::id() const
   {
     return m_id;
