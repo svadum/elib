@@ -16,6 +16,7 @@ add_library(elib STATIC
     ${ELIB_IMPL_INCLUDE_DIR}/time/core_clock.h
     ${ELIB_IMPL_INCLUDE_DIR}/time/system_clock.h
     ${ELIB_IMPL_INCLUDE_DIR}/time/timer.h
+    ${ELIB_IMPL_INCLUDE_DIR}/scope.h
 
     time/system_clock.cpp
     time/timer.cpp
