@@ -23,10 +23,17 @@ namespace elib
       // Timer configuration
       using TimerInterval = std::chrono::milliseconds;
 
-      inline constexpr std::size_t maxTimerNum = 10; // maximum active registered timers
+      inline constexpr std::size_t maxTimerNum = 10;     // maximum active registered timers
     }
 
     using namespace defaults;
+  }
+
+  namespace event::config
+  {
+    inline constexpr std::size_t maxEventLoopNum = 10;    // maximum active registered event loops
+    inline constexpr std::size_t maxEventPerCallNum = 25; // maximum amount of events that can be 
+                                                          // processed during at a time
   }
 }
 

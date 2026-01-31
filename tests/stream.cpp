@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <elib/stream.h>
 
-TEST_CASE("Data stream: constructors", "[elib::data::stream]") {
+TEST_CASE("Data stream: constructors", "[data][stream]") {
     { // OutputDataStream: std::array
         std::array<std::uint8_t, 0> data{};
         elib::data::OutputStream stream(data);
@@ -95,7 +95,7 @@ TEST_CASE("Data stream: constructors", "[elib::data::stream]") {
     }
 }
 
-TEST_CASE("Data stream: read operations", "[elib::data::stream]") {
+TEST_CASE("Data stream: read operations", "[data][stream]") {
     { // byte by byte
         std::array<std::uint8_t, 5> data{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
         elib::data::InputStream stream{data};
@@ -184,7 +184,7 @@ TEST_CASE("Data stream: read operations", "[elib::data::stream]") {
     }
 }
 
-TEST_CASE("Data stream: write operations", "[elib::data::stream]") {
+TEST_CASE("Data stream: write operations", "[data][stream]") {
     { // write in empty
         std::array<std::uint8_t, 0> data{};
         elib::data::OutputStream stream(data);

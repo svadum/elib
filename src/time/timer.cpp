@@ -88,6 +88,12 @@ namespace elib::time
     {
       TimerHandle &currentTimer = timers[currentIndex];
 
+      // advance current index
+      if (++currentIndex >= timers.size())
+      {
+        currentIndex = 0;
+      }
+
       if (currentTimer.registered &&
           currentTimer.callback &&
           currentTimer.active &&
@@ -102,11 +108,6 @@ namespace elib::time
           currentTimer.active = false;
         }
         return;
-      }
-
-      if (++currentIndex >= timers.size())
-      {
-        currentIndex = 0;
       }
     } while (currentIndex != initialIndex);
   }

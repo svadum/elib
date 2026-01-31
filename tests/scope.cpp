@@ -2,7 +2,7 @@
 #include <elib/scope.h>
 
 
-TEST_CASE("elib::scope_exit works correctly", "[elib::scope]") {
+TEST_CASE("elib::scope_exit works correctly", "[scope]") {
   bool flag = false;
   {
     elib::scope_exit on_exit([&flag] { flag = true; });
