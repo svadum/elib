@@ -34,6 +34,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\optional.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\utility.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\event_loop.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\scope.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp">
@@ -42,5 +44,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\system_clock.cpp">
       <Filter>time</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\event_loop.cpp" />
   </ItemGroup>
 </Project>

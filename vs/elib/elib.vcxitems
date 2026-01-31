@@ -18,11 +18,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\callback.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\circular_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\event_loop.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\expected.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\function_ref.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\inplace_function.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\memory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\optional.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\scope.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\span.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\stream.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\core_clock.h" />
@@ -34,6 +36,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\event_loop.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\system_clock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp" />
   </ItemGroup>

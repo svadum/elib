@@ -22,7 +22,6 @@ obj/
 .vs2010/
 *.vcxproj*
 *.vcproj*
-*.sln
 *.suo
 *.user
 *.userosscache

@@ -112,6 +112,8 @@ namespace elib
     EventLoop()
     {
       const bool result = event::impl::registerLoop(*this);
+
+      (void)(result);
       // TODO: handle failed registration: abort? assert?, we don't use exception
       // add valid() method and let user decide what to do?
     }
