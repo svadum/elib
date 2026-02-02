@@ -1,0 +1,1 @@
+#define ELIB_USER_ERROR_HANDLER // override assert/error handler for tests

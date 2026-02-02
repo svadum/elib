@@ -18,6 +18,7 @@ add_library(elib STATIC
     ${ELIB_IMPL_INCLUDE_DIR}/time/timer.h
     ${ELIB_IMPL_INCLUDE_DIR}/scope.h
     ${ELIB_IMPL_INCLUDE_DIR}/event_loop.h
+    ${ELIB_IMPL_INCLUDE_DIR}/assert.h
 
     time/system_clock.cpp
     time/timer.cpp
@@ -25,8 +26,12 @@ add_library(elib STATIC
 )
 
 target_include_directories(elib PUBLIC ${ELIB_INCLUDE_DIR})
-target_compile_features(elib PUBLIC cxx_std_17)
-set_target_properties(elib PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(elib PUBLIC cxx_std_17 c_std_11)
+set_target_properties(elib PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    C_STANDARD_REQUIRED   ON
+    CXX_EXTENSIONS        OFF # Use -std=c++17 instead of -std=gnu++17
+)
 
 # Set compiler options
 if(MSVC)
@@ -45,19 +50,3 @@ elseif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         )
     endif()
 endif()
-
-# # Installation rules for the library
-# install(TARGETS elib
-#     EXPORT elib-targets
-#     LIBRARY DESTINATION lib
-#     ARCHIVE DESTINATION lib
-#     INCLUDES DESTINATION include
-# )
-
-# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/elib/ DESTINATION include/elib)
-
-# # Package configuration (optional)
-# install(EXPORT elib-targets
-#     FILE elibConfig.cmake
-#     DESTINATION lib/cmake/elib
-# )

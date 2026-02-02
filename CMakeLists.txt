@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Project information
-project(elib VERSION 1.8.1 LANGUAGES CXX)
+project(elib VERSION 1.9.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -18,5 +18,4 @@ if(ELIB_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-# Installation (optional)
 install(FILES LICENSE_1_0.txt DESTINATION ${CMAKE_INSTALL_PREFIX})

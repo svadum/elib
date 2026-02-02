@@ -1,6 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
+#include <vector>
+#include <memory>
 #include <elib/event_loop.h>
 #include <elib/config.h>
+#include "mock/assert.h"
 
 // specific event type for testing
 struct TestEvent {
@@ -209,37 +212,43 @@ TEST_CASE("elib::event_loop multiple loops interaction", "[event_loop]")
 
 TEST_CASE("elib::event_loop capacity limits", "[event_loop]")
 {
+  using namespace trompeloeil;
+
   SECTION("Buffer overflow behavior")
   {
-      elib::EventLoop<int, 2> tinyLoop;
-      
-      REQUIRE(tinyLoop.push(1) == true);
-      REQUIRE(tinyLoop.push(2) == true);
-      REQUIRE(tinyLoop.push(3) == false); // Should fail
+    elib::EventLoop<int, 2> tinyLoop;
+    
+    REQUIRE(tinyLoop.push(1) == true);
+    REQUIRE(tinyLoop.push(2) == true);
+    REQUIRE(tinyLoop.push(3) == false); // Should fail
   }
 
   SECTION("Registry overflow behavior")
   {
-      // This test requires creating more loops than maxEventLoopNum.
-      // We use std::vector to hold them to avoid stack overflow or manual management.
-      std::vector<std::unique_ptr<elib::EventLoop<int, 1>>> spam;
-      
-      // Fill the registry
-      for(size_t i=0; i < elib::event::config::maxEventLoopNum; ++i) {
-          spam.push_back(std::make_unique<elib::EventLoop<int, 1>>());
-      }
+    // 1. Fill the registry
+    std::vector<std::unique_ptr<elib::EventLoop<int, 1>>> spam;
+    
+    for(size_t i=0; i < elib::event::config::maxEventLoopNum; ++i) {
+        spam.push_back(std::make_unique<elib::EventLoop<int, 1>>());
+    }
 
-      // Try to create one more
-      // Since constructor doesn't throw or return status, we can't easily check 
-      // failure inside the class without inspecting private state or adding a valid() method.
-      // However, we can ensure it doesn't crash.
-      
-      elib::EventLoop<int, 1> extraLoop;
-      bool pushed = extraLoop.push(1); // Should still work locally
-      REQUIRE(pushed == true);
-      
-      // But processing shouldn't crash
-      elib::event::processEventLoops();
+    // 2. Set Expectation
+    // The constructor will trigger the assert. We expect it, match the message, 
+    // and allow it to return void (suppressing the crash).
+    REQUIRE_CALL(mock::AssertMock::instance(), onError(_, _, _));
+
+    // 3. Trigger
+    // This creates the extra loop. The assert fires, caught by mock, returns.
+    elib::EventLoop<int, 1> extraLoop;
+
+    // 4. Verify Local Behavior (Zombie Object)
+    // It works locally...
+    bool pushed = extraLoop.push(1); 
+    REQUIRE(pushed == true);
+    
+    // 5. Verify System Safety
+    // ...but is not in the global loop, so processing is safe.
+    elib::event::processEventLoops();
   }
 }
 

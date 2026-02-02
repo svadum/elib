@@ -18,6 +18,8 @@ FetchContent_MakeAvailable(trompeloeil)
 
 
 add_executable(tests
+  host/elib.tweaks.h
+  mock/assert.h
   array.cpp
   aligned_storage.cpp
   timer.cpp
@@ -28,6 +30,8 @@ add_executable(tests
   event_loop.cpp
 )
 
+set(HOST_TWEAKS_INCLUDE_PATH host)
+target_include_directories(elib PUBLIC ${HOST_TWEAKS_INCLUDE_PATH})
 target_link_libraries(tests PRIVATE elib Catch2::Catch2WithMain trompeloeil::trompeloeil)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)

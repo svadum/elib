@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\array.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\assert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\callback.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\circular_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\config.h" />
