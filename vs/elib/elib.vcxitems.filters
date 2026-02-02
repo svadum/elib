@@ -36,6 +36,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\event_loop.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\scope.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\assert.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp">

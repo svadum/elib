@@ -1,12 +1,13 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
-
 #include <cstdint>
 #include <chrono>
 
-#include "elib/time/system_clock.h"
-#include "elib/time/timer.h"
+#include <elib/time/system_clock.h>
+#include <elib/time/timer.h>
+
+#include "mock/assert.h"
 
 using namespace elib::time;
 using namespace std::chrono;
@@ -215,6 +216,13 @@ TEST_CASE("Timer: Exhaust Timer Slots", "[time][timer]")
         timers.push_back(std::move(timer));
     }
 
+    using namespace trompeloeil;
+
+   // Only expect the assertion if we are in a Debug build!
+#if !defined(NDEBUG) && !defined(ELIB_CONFIG_NO_ASSERTS)
+    REQUIRE_CALL(mock::AssertMock::instance(), onError(_, _, _))
+            .WITH(std::string(_3).find("elib::time::Timer") != std::string::npos);
+#endif
     // Exceeding the maximum number of timers should fail
     auto extraTimer = Timer::registerTimer(milliseconds{10}, []() {});
     REQUIRE_FALSE(extraTimer.valid());

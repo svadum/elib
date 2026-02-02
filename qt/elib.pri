@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD/../../include
 
 HEADERS += \
+    $$PWD/../../include/elib/assert.h \
     $$PWD/../../include/elib/array.h \
     $$PWD/../../include/elib/callback.h \
     $$PWD/../../include/elib/circular_buffer.h \

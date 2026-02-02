@@ -4,6 +4,7 @@
 #include <numeric>
 #include <utility>
 
+#include <elib/assert.h>
 #include <elib/time/system_clock.h>
 #include <elib/time/elapsed_timer.h>
 
@@ -27,6 +28,8 @@ namespace elib::time
   TimerHandle &getHandle(std::size_t index)
   {
     static TimerHandle invalid{};
+
+    ELIB_ASSERT_DEBUG(index < timers.size(), "elib::time::Timer: timer ID out of bounds!");
 
     if (index >= timers.size())
     {
@@ -55,6 +58,8 @@ namespace elib::time
         return static_cast<Timer::Id>(index);
       }
     }
+
+    ELIB_ASSERT_DEBUG(false, "elib::time::Timer: maximum active timer number overflow! Increase elib::config::maxTimerNum");
 
     return emptyTimerId;
   }

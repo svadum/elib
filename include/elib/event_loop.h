@@ -72,6 +72,7 @@
 #include <utility>
 #include <functional>
 #include <elib/config.h>
+#include <elib/assert.h>
 #include <elib/circular_buffer.h>
 
 namespace elib
@@ -111,11 +112,9 @@ namespace elib
 
     EventLoop()
     {
-      const bool result = event::impl::registerLoop(*this);
+      [[maybe_unused]] const bool result = event::impl::registerLoop(*this);
 
-      (void)(result);
-      // TODO: handle failed registration: abort? assert?, we don't use exception
-      // add valid() method and let user decide what to do?
+      ELIB_ASSERT(result, "elib::EventLoop: unable to register event loop! Try to increase maximum number of active event loops.");
     }
 
     ~EventLoop()
