@@ -12,6 +12,6 @@
 namespace elib
 {
   // NOTE: span-lite will switch to std::span if it's available
-  template<class T>
-  using span = nonstd::span<T>;
+  template<class T, size_t Extent = nonstd::dynamic_extent>
+  using span = nonstd::span<T, Extent>;
 }
