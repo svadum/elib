@@ -35,7 +35,7 @@ TEST_CASE("elib::event_loop basic functionality", "[event_loop]")
     REQUIRE(call_count == 0);
 
     // Process
-    elib::event::processEventLoops();
+    elib::kernel::processTasks();
 
     // After processing
     REQUIRE(call_count == 1);
@@ -46,11 +46,11 @@ TEST_CASE("elib::event_loop basic functionality", "[event_loop]")
   SECTION("Buffer clears after processing")
   {
     loop.push({1, 100});
-    elib::event::processEventLoops();
+    elib::kernel::processTasks();
     REQUIRE(call_count == 1);
 
     // Call again - buffer should be empty, handler should not run
-    elib::event::processEventLoops();
+    elib::kernel::processTasks();
     REQUIRE(call_count == 1);
   }
 }
@@ -74,11 +74,11 @@ TEST_CASE("elib::event_loop processing strategies", "[event_loop]")
       loop.push(3);
 
       // First pass: Should process only 1
-      elib::event::processEventLoops();
+      loop.run();
       REQUIRE(process_count == 1);
 
       // Second pass: Should process 2nd
-      elib::event::processEventLoops();
+      loop.run();
       REQUIRE(process_count == 2);
   }
 
@@ -90,7 +90,7 @@ TEST_CASE("elib::event_loop processing strategies", "[event_loop]")
       for(int i=0; i<5; ++i) loop.push(i);
 
       // One pass should clear them all
-      elib::event::processEventLoops();
+      loop.run();
       REQUIRE(process_count == 5);
   }
 
@@ -112,13 +112,13 @@ TEST_CASE("elib::event_loop processing strategies", "[event_loop]")
       }
 
       // Process
-      elib::event::processEventLoops();
+      loop.run();
 
       // Should have processed exactly 'limit' events, leaving 5 remaining
       REQUIRE(process_count == limit);
       
       // Next call cleans up the rest
-      elib::event::processEventLoops();
+      loop.run();
       REQUIRE(process_count == push_count);
   }
 }
@@ -148,7 +148,7 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
       // 2. Process
       // If the registry update failed, this would either crash (dangling pointer)
       // or do nothing (if pointer was nullified).
-      elib::event::processEventLoops();
+      mainLoop.run();
 
       REQUIRE(received_val == 42);
   }
@@ -169,7 +169,7 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
       } // loopB destructor runs here
 
       loopA.push(99);
-      elib::event::processEventLoops();
+      elib::kernel::processTasks();
       
       REQUIRE(received_val == 99);
   }
@@ -195,14 +195,14 @@ TEST_CASE("elib::event_loop multiple loops interaction", "[event_loop]")
       // We don't know which one comes first (depends on registry slots), 
       // but we know calling it twice should handle both.
 
-      elib::event::processEventLoops();
+      elib::kernel::processTasks();
       
       // One should be done, one should be pending
       bool caseA = (val1 == 10 && val2 == 0);
       bool caseB = (val1 == 0 && val2 == 20);
       REQUIRE((caseA || caseB));
 
-      elib::event::processEventLoops();
+      elib::kernel::processTasks();
 
       // Now both should be done
       REQUIRE(val1 == 10);
@@ -228,7 +228,7 @@ TEST_CASE("elib::event_loop capacity limits", "[event_loop]")
     // 1. Fill the registry
     std::vector<std::unique_ptr<elib::EventLoop<int, 1>>> spam;
     
-    for(size_t i=0; i < elib::event::config::maxEventLoopNum; ++i) {
+    for(size_t i=0; i < elib::kernel::taskMaxNum(); ++i) {
         spam.push_back(std::make_unique<elib::EventLoop<int, 1>>());
     }
 
@@ -248,7 +248,7 @@ TEST_CASE("elib::event_loop capacity limits", "[event_loop]")
     
     // 5. Verify System Safety
     // ...but is not in the global loop, so processing is safe.
-    elib::event::processEventLoops();
+    elib::kernel::processTasks();
   }
 }
 
@@ -264,7 +264,7 @@ TEST_CASE("elib::event_loop push over capacity - force push", "[event_loop]")
   tinyLoop.setProcessStrategy(elib::event::ProcessStrategy::AllEvents);
   
   tinyLoop.pushOver(3); // force 3. push_over works in circular order, so 1 will be overwritten
-  tinyLoop.process();
+  tinyLoop.run();
 
   REQUIRE(processed[0] == 2); // 1 was overwritten, 2 become first processed
   REQUIRE(processed[1] == 3); // 3 was forced and processed

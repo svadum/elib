@@ -72,6 +72,7 @@
 #include <utility>
 #include <functional>
 #include <elib/config.h>
+#include <elib/task.h>
 #include <elib/assert.h>
 #include <elib/circular_buffer.h>
 
@@ -79,71 +80,42 @@ namespace elib
 {
   namespace event
   {
-    namespace impl
-    {
-      class IEventLoop
-      {
-      public:
-        virtual ~IEventLoop() = default;
-
-        virtual void process() = 0;
-      };
-
-      bool registerLoop(IEventLoop& loop);
-      void unregisterLoop(IEventLoop& loop);
-
-      void moveLoop(IEventLoop& from, IEventLoop& to);
-    }
-
     enum class ProcessStrategy
     {
       SingleEvent, // one event per call
       AllEvents    // all pending events per call
     };
-
-    void processEventLoops();
   }
 
   template<typename Event, std::size_t EventQueueSize>
-  class EventLoop final : public event::impl::IEventLoop
+  class EventLoop : public Task
   {
   public:
     using Handler = std::function<void(const Event&)>;
 
-    EventLoop()
-    {
-      [[maybe_unused]] const bool result = event::impl::registerLoop(*this);
-
-      ELIB_ASSERT(result, "elib::EventLoop: unable to register event loop! Try to increase maximum number of active event loops.");
-    }
-
-    ~EventLoop()
-    {
-      event::impl::unregisterLoop(*this);
-    }
+    EventLoop() = default;
 
     EventLoop(const EventLoop&) = delete;
     EventLoop& operator=(const EventLoop&) = delete;
 
     EventLoop(EventLoop&& other)
-      : m_processStrategy{other.m_processStrategy}
+      : Task(std::move(other))
+      , m_processStrategy{other.m_processStrategy}
       , m_handler{std::move(other.m_handler)}
       , m_events{std::move(other.m_events)}
     {
-      event::impl::moveLoop(other, *this);
+
     }
 
     EventLoop& operator=(EventLoop&& other)
     {
       if (this != &other)
       {
-        event::impl::unregisterLoop(*this);
+        Task::operator=(std::move(other));
 
         m_processStrategy = other.m_processStrategy;
         m_handler = std::move(other.m_handler);
         m_events = std::move(other.m_events);
-
-        event::impl::moveLoop(other, *this);
       }
 
       return *this;
@@ -151,7 +123,7 @@ namespace elib
 
     void setHandler(Handler handler)
     {
-      m_handler = std::move(handler);
+      m_handler = handler ? std::move(handler) : emptyHandler;
     }
 
     void setProcessStrategy(event::ProcessStrategy strategy)
@@ -189,7 +161,7 @@ namespace elib
       m_events.clear();
     }
 
-    void process() override
+    void run() override
     {
       if (m_events.empty())
         return;
@@ -207,7 +179,7 @@ namespace elib
       Event pending = std::move(m_events.front());
       m_events.pop();
 
-      onEvent(pending);
+      m_handler(pending);
     }
 
     void processAll()
@@ -218,15 +190,11 @@ namespace elib
       }
     }
 
-    void onEvent(const Event& event)
-    {
-      if (m_handler)
-        m_handler(event);
-    }
-
   private:
+    static void emptyHandler(const Event&) {}
+
     event::ProcessStrategy m_processStrategy{event::ProcessStrategy::SingleEvent};
-    Handler m_handler;
-    circular_buffer<Event, EventQueueSize> m_events;
+    Handler m_handler{emptyHandler};
+    circular_buffer<Event, EventQueueSize> m_events{};
   };
 }

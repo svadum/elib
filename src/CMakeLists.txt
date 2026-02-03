@@ -19,10 +19,13 @@ add_library(elib STATIC
     ${ELIB_IMPL_INCLUDE_DIR}/scope.h
     ${ELIB_IMPL_INCLUDE_DIR}/event_loop.h
     ${ELIB_IMPL_INCLUDE_DIR}/assert.h
+    ${ELIB_IMPL_INCLUDE_DIR}/kernel.h
+    ${ELIB_IMPL_INCLUDE_DIR}/task.h
 
     time/system_clock.cpp
     time/timer.cpp
-    event_loop.cpp
+    kernel.cpp
+    task.cpp
 )
 
 target_include_directories(elib PUBLIC ${ELIB_INCLUDE_DIR})

@@ -20,6 +20,7 @@ FetchContent_MakeAvailable(trompeloeil)
 add_executable(tests
   host/elib.tweaks.h
   mock/assert.h
+  mock/assert.cpp
   array.cpp
   aligned_storage.cpp
   timer.cpp
@@ -28,6 +29,7 @@ add_executable(tests
   external.cpp
   scope.cpp
   event_loop.cpp
+  kernel.cpp
 )
 
 set(HOST_TWEAKS_INCLUDE_PATH host)

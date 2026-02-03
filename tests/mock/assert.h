@@ -26,8 +26,5 @@ namespace mock
 
 namespace elib
 {
-  inline void onError(const char* file, int line, const char* message)
-  {
-    mock::AssertMock::instance().onError(file, line, message);
-  }
+  void onError(const char* file, int line, const char* message);
 }

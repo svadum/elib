@@ -35,6 +35,11 @@ namespace elib
     inline constexpr std::size_t maxEventPerCallNum = 25; // maximum amount of events that can be 
                                                           // processed during at a time
   }
+
+  namespace kernel::config
+  {
+    inline constexpr std::size_t maxTaskNum = 10; // maximum active registered tasks
+  }
 }
 
 // Users can override Embedded Library configuration values
