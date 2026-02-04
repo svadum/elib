@@ -21,9 +21,12 @@ HEADERS += \
     $$PWD/../../include/elib/time/system_clock.h \
     $$PWD/../../include/elib/time/timer.h \
     $$PWD/../../include/elib/utility.h \
-    $$PWD/../../include/elib/version.h
+    $$PWD/../../include/elib/version.h \
+    $$PWD/../../include/elib/kernel.h \
+    $$PWD/../../include/elib/task.h
 
 SOURCES += \
-    $$PWD/../../src/event_loop.cpp \
+    $$PWD/../../src/kernel.cpp \
+    $$PWD/../../src/task.cpp \
     $$PWD/../../src/time/system_clock.cpp \
     $$PWD/../../src/time/timer.cpp

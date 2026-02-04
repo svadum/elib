@@ -23,11 +23,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\expected.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\function_ref.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\inplace_function.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\kernel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\memory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\optional.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\scope.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\span.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\stream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\task.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\core_clock.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\deadline_timer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\elapsed_timer.h" />
@@ -37,7 +39,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\event_loop.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\kernel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\task.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\system_clock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp" />
   </ItemGroup>

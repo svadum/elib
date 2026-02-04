@@ -13,7 +13,7 @@ namespace elib::version
 {
   constexpr const char* str()
   {
-    return "1.10.0";
+    return "1.10.1";
   }
 
   constexpr unsigned major()
@@ -28,7 +28,7 @@ namespace elib::version
 
   constexpr unsigned patch()
   {
-    return 0 +0;
+    return 1 +0;
   }
 
   constexpr unsigned tweak()

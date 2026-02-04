@@ -2,6 +2,7 @@
 #include <elib/config.h>
 #include <elib/time/timer.h>
 #include <array>
+#include <algorithm>
 
 namespace elib::kernel
 {
@@ -9,6 +10,11 @@ namespace elib::kernel
 
   bool registerTask(ITask& task)
   {
+    auto it = std::find(tasks.begin(), tasks.end(), &task);
+    if (it != tasks.end())
+      return true; // task already registered, duplicates are not allowed
+
+    // find empty slot
     for (auto& slot : tasks)
     {
       if (slot == nullptr)
