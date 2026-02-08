@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <elib/array.h>
 
-TEST_CASE("array default construction", "[array]") {
+TEST_CASE("elib::array default construction", "[array]") {
     elib::array<int, 5> arr;
 
     REQUIRE(arr.size() == 0);
@@ -9,7 +9,7 @@ TEST_CASE("array default construction", "[array]") {
     REQUIRE(arr.empty() == true);
 }
 
-TEST_CASE("array push_back and size", "[array]") {
+TEST_CASE("elib::array push_back and size", "[array]") {
     elib::array<int, 5> arr;
 
     REQUIRE(arr.push_back(10) == true);
@@ -21,7 +21,7 @@ TEST_CASE("array push_back and size", "[array]") {
     REQUIRE(arr[1] == 20);
 }
 
-TEST_CASE("array pop_back", "[array]") {
+TEST_CASE("elib::array pop_back", "[array]") {
     elib::array<int, 3> arr;
 
     arr.push_back(5);
@@ -38,7 +38,7 @@ TEST_CASE("array pop_back", "[array]") {
     REQUIRE(arr.empty() == true);
 }
 
-TEST_CASE("array insert", "[array]") {
+TEST_CASE("elib::array insert", "[array]") {
     elib::array<int, 4> arr;
 
     arr.push_back(1);
@@ -51,7 +51,7 @@ TEST_CASE("array insert", "[array]") {
     REQUIRE(arr[2] == 3);
 }
 
-TEST_CASE("array erase", "[array]") {
+TEST_CASE("elib::array erase", "[array]") {
     elib::array<int, 4> arr;
 
     arr.push_back(1);
@@ -65,7 +65,7 @@ TEST_CASE("array erase", "[array]") {
     REQUIRE(arr[1] == 3);
 }
 
-TEST_CASE("array at() method", "[array]") {
+TEST_CASE("elib::array at() method", "[array]") {
     elib::array<int, 3> arr;
 
     arr.push_back(10);
@@ -77,7 +77,7 @@ TEST_CASE("array at() method", "[array]") {
     REQUIRE(arr.at(2) == 30);
 }
 
-TEST_CASE("array data() method", "[array]") {
+TEST_CASE("elib::array data() method", "[array]") {
     elib::array<int, 3> arr;
 
     arr.push_back(100);
@@ -89,7 +89,7 @@ TEST_CASE("array data() method", "[array]") {
     REQUIRE(ptr[1] == 200);
 }
 
-TEST_CASE("array full() method", "[array]") {
+TEST_CASE("elib::array full() method", "[array]") {
     elib::array<int, 2> arr;
 
     REQUIRE(arr.full() == false);
@@ -100,7 +100,7 @@ TEST_CASE("array full() method", "[array]") {
     REQUIRE(arr.full() == true);
 }
 
-TEST_CASE("array erase last", "[array]") {
+TEST_CASE("elib::array erase last", "[array]") {
     elib::array<int, 4> arr;
 
     arr.push_back(1);
@@ -114,7 +114,7 @@ TEST_CASE("array erase last", "[array]") {
     REQUIRE(arr[1] == 2);
 }
 
-TEST_CASE("array erase first", "[array]") {
+TEST_CASE("elib::array erase first", "[array]") {
     elib::array<int, 4> arr;
 
     arr.push_back(1);

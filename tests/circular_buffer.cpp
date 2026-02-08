@@ -4,7 +4,7 @@
 #include <iterator>
 #include <vector>
 
-TEST_CASE("Default construction", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Default construction", "[circular_buffer]") {
     elib::circular_buffer<int, 4> buf;
 
     REQUIRE(buf.empty());
@@ -13,7 +13,7 @@ TEST_CASE("Default construction", "[circular_buffer]") {
     REQUIRE(buf.capacity() == 4);
 }
 
-TEST_CASE("Push and pop elements", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Push and pop elements", "[circular_buffer]") {
     elib::circular_buffer<int, 4> buf;
 
     REQUIRE(buf.push(1));
@@ -29,7 +29,7 @@ TEST_CASE("Push and pop elements", "[circular_buffer]") {
     REQUIRE(buf.size() == 2);
 }
 
-TEST_CASE("Push until full", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Push until full", "[circular_buffer]") {
     elib::circular_buffer<int, 3> buf;
 
     REQUIRE(buf.push(10));
@@ -43,7 +43,7 @@ TEST_CASE("Push until full", "[circular_buffer]") {
     REQUIRE(buf.back() == 30);
 }
 
-TEST_CASE("Push over old elements", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Push over old elements", "[circular_buffer]") {
     elib::circular_buffer<int, 3> buf;
 
     buf.push(1);
@@ -58,7 +58,7 @@ TEST_CASE("Push over old elements", "[circular_buffer]") {
     REQUIRE(buf.back() == 4);
 }
 
-TEST_CASE("Iterator traversal works", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Iterator traversal works", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf;
 
     buf.push(1);
@@ -71,7 +71,7 @@ TEST_CASE("Iterator traversal works", "[circular_buffer]") {
     REQUIRE(values == std::vector<int>{1, 2, 3});
 }
 
-TEST_CASE("Iterator wrap-around works", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Iterator wrap-around works", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf;
 
     buf.push(10);
@@ -91,7 +91,7 @@ TEST_CASE("Iterator wrap-around works", "[circular_buffer]") {
     REQUIRE(values == std::vector<int>{30, 40, 50, 60, 70});
 }
 
-TEST_CASE("Initializer list construction", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Initializer list construction", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf{1, 2, 3};
 
     REQUIRE(buf.size() == 3);
@@ -99,7 +99,7 @@ TEST_CASE("Initializer list construction", "[circular_buffer]") {
     REQUIRE(buf.back() == 3);
 }
 
-TEST_CASE("Array construction", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Array construction", "[circular_buffer]") {
     int arr[] = {10, 20, 30};
     elib::circular_buffer<int, 5> buf(arr);
 
@@ -108,7 +108,7 @@ TEST_CASE("Array construction", "[circular_buffer]") {
     REQUIRE(buf.back() == 30);
 }
 
-TEST_CASE("Move semantics", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: Move semantics", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf;
     buf.push(1);
     buf.push(2);
@@ -120,7 +120,7 @@ TEST_CASE("Move semantics", "[circular_buffer]") {
     REQUIRE(buf2.back() == 2);
 }
 
-TEST_CASE("std::next works", "[circular_buffer]") {
+TEST_CASE("elib::circular_buffer: std::next works", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf;
     buf.push(100);
     buf.push(200);

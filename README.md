@@ -1,8 +1,13 @@
-# **elib - Lightweight C++ Library for Embedded Systems** 
-elib contains a set of useful and embedded-friendly containers, aliases and utilities with static memory allocation
+# **elib - C++ library for bare metal embedded systems** 
+elib contains a set of useful and embedded-friendly templates, types and utilities:
 
+- Fixed-memory containers: `elib::array`, `elib::circular_buffer`
+- Basic event handling: `elib::kernel`, `elib::Task`, `elib::EventLoop`
+- Time management (`elib::time`): core and system clocks, timers
+- Data streams: `elib::data::OutputStream`, `elib::data::InputStream`
+- Utilities: `elib::aligned_storage`, `elib::scope_exit`
 
-## **📜 License**
+### License
 Distributed under the Boost Software License 1.0 – free to use, modify, and distribute.
 
 ### Third party licenses

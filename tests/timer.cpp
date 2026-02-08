@@ -45,7 +45,7 @@ public:
 CATCH_REGISTER_LISTENER(TimerListener);
 
 
-TEST_CASE("Timer: Register Timer", "[time][timer]")
+TEST_CASE("elib::time::Timer: Register Timer", "[time][timer]")
 {
     bool callbackExecuted = false;
     auto timer = Timer::registerTimer(milliseconds{100}, [&]() {
@@ -68,7 +68,7 @@ TEST_CASE("Timer: Register Timer", "[time][timer]")
     REQUIRE_FALSE(timer.running());
 }
 
-TEST_CASE("Timer: Single-Shot Timer", "[time][timer]")
+TEST_CASE("elib::time::Timer: Single-Shot Timer", "[time][timer]")
 {
     int counter = 0;
     bool singleShotCreated = Timer::singleShot(milliseconds{50}, [&]() {
@@ -87,7 +87,7 @@ TEST_CASE("Timer: Single-Shot Timer", "[time][timer]")
     REQUIRE(counter == 1); // Should not trigger again
 }
 
-TEST_CASE("Timer: Periodic Timer", "[time][timer]")
+TEST_CASE("elib::time::Timer: Periodic Timer", "[time][timer]")
 {
     int counter = 0;
     auto timer = Timer::registerTimer(milliseconds{30}, [&]() {
@@ -114,7 +114,7 @@ TEST_CASE("Timer: Periodic Timer", "[time][timer]")
     REQUIRE(counter == 3); // Timer stopped, no more increments
 }
 
-TEST_CASE("Timer: Change Interval While Running", "[time][timer]")
+TEST_CASE("elib::time::Timer: Change Interval While Running", "[time][timer]")
 {
     int counter = 0;
     auto timer = Timer::registerTimer(milliseconds{50}, [&]() {
@@ -137,7 +137,7 @@ TEST_CASE("Timer: Change Interval While Running", "[time][timer]")
     REQUIRE(counter == 3);
 }
 
-TEST_CASE("Timer: Unregister Timer", "[time][timer]")
+TEST_CASE("elib::time::Timer: Unregister Timer", "[time][timer]")
 {
     int counter = 0;
     auto timer = Timer::registerTimer(milliseconds{40}, [&]() {
@@ -157,7 +157,7 @@ TEST_CASE("Timer: Unregister Timer", "[time][timer]")
     REQUIRE(counter == 1); // Timer unregistered, no more increments
 }
 
-TEST_CASE("Timer: Destructor Unregisters Timer", "[time][timer]")
+TEST_CASE("elib::time::Timer: Destructor Unregisters Timer", "[time][timer]")
 {
     int counter = 0;
     {
@@ -172,7 +172,7 @@ TEST_CASE("Timer: Destructor Unregisters Timer", "[time][timer]")
     REQUIRE(counter == 0); // Timer should not trigger
 }
 
-TEST_CASE("Timer: Multiple Timers", "[time][timer]")
+TEST_CASE("elib::time::Timer: Multiple Timers", "[time][timer]")
 {
     int timer1Counter = 0;
     int timer2Counter = 0;
@@ -204,7 +204,7 @@ TEST_CASE("Timer: Multiple Timers", "[time][timer]")
     REQUIRE(timer2Counter == 2);
 }
 
-TEST_CASE("Timer: Exhaust Timer Slots", "[time][timer]")
+TEST_CASE("elib::time::Timer: Exhaust Timer Slots", "[time][timer]")
 {
     std::vector<Timer> timers;
     for (std::size_t i = 0; i < config::maxTimerNum; ++i)
@@ -228,7 +228,7 @@ TEST_CASE("Timer: Exhaust Timer Slots", "[time][timer]")
     REQUIRE_FALSE(extraTimer.valid());
 }
 
-TEST_CASE("Timer: Update Callback via setCallback", "[time][timer]")
+TEST_CASE("elib::time::Timer: Update Callback via setCallback", "[time][timer]")
 {
     bool firstCallbackExecuted = false;
     bool secondCallbackExecuted = false;
@@ -250,7 +250,7 @@ TEST_CASE("Timer: Update Callback via setCallback", "[time][timer]")
     CHECK(secondCallbackExecuted);
 }
 
-TEST_CASE("Timer: setCallback preserves Timer state", "[time][timer]")
+TEST_CASE("elib::time::Timer: setCallback preserves Timer state", "[time][timer]")
 {
     int counter = 0;
     auto timer = Timer::registerTimer(milliseconds{50}, [&]() { counter++; });
@@ -268,7 +268,7 @@ TEST_CASE("Timer: setCallback preserves Timer state", "[time][timer]")
     CHECK(counter == 20); // Periodic behavior should still work
 }
 
-TEST_CASE("Timer: setCallback handles Move Scenario", "[time][timer]")
+TEST_CASE("elib::time::Timer: setCallback handles Move Scenario", "[time][timer]")
 {
     // This simulates what happens inside SerialSensorAPI move operations
     int value = 0;
@@ -309,7 +309,7 @@ TEST_CASE("Timer: setCallback handles Move Scenario", "[time][timer]")
     }
 }
 
-TEST_CASE("Timer: setCallback on Invalid Timer", "[time][timer]")
+TEST_CASE("elib::time::Timer: setCallback on Invalid Timer", "[time][timer]")
 {
     Timer timer; // Unregistered/Invalid
     REQUIRE_FALSE(timer.valid());

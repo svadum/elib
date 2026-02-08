@@ -25,14 +25,14 @@ namespace
 
 } // anonymous namespace
 
-TEST_CASE("aligned_storage: Default constructed storage is empty", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Default constructed storage is empty", "[aligned_storage]")
 {
   elib::memory::aligned_storage<TestType> storage;
 
   REQUIRE_FALSE(storage.is_constructed());
 }
 
-TEST_CASE("aligned_storage: Construct an object", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Construct an object", "[aligned_storage]")
 {
   elib::memory::aligned_storage<TestType> storage;
 
@@ -47,7 +47,7 @@ TEST_CASE("aligned_storage: Construct an object", "[aligned_storage]")
   REQUIRE(const_obj.str == "Hello");
 }
 
-TEST_CASE("aligned_storage: Destroy object", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Destroy object", "[aligned_storage]")
 {
   elib::memory::aligned_storage<TestType> storage;
 
@@ -58,7 +58,7 @@ TEST_CASE("aligned_storage: Destroy object", "[aligned_storage]")
   REQUIRE_FALSE(storage.is_constructed());
 }
 
-TEST_CASE("aligned_storage: Destroy calls destructor", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Destroy calls destructor", "[aligned_storage]")
 {
   TestType::destroyed = false;
   {
@@ -71,7 +71,7 @@ TEST_CASE("aligned_storage: Destroy calls destructor", "[aligned_storage]")
   REQUIRE(TestType::destroyed);
 }
 
-TEST_CASE("aligned_storage: Construct multiple times", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Construct multiple times", "[aligned_storage]")
 {
   elib::memory::aligned_storage<TestType> storage;
 
@@ -86,7 +86,7 @@ TEST_CASE("aligned_storage: Construct multiple times", "[aligned_storage]")
   REQUIRE(storage.is_constructed());
 }
 
-TEST_CASE("aligned_storage: Construct and get()", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Construct and get()", "[aligned_storage]")
 {
   elib::memory::aligned_storage<int> storage;
 
@@ -95,7 +95,7 @@ TEST_CASE("aligned_storage: Construct and get()", "[aligned_storage]")
   REQUIRE(storage.get() == 123);
 }
 
-TEST_CASE("aligned_storage: Access get() without constructing", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Access get() without constructing", "[aligned_storage]")
 {
   elib::memory::aligned_storage<int> storage;
 
@@ -105,7 +105,7 @@ TEST_CASE("aligned_storage: Access get() without constructing", "[aligned_storag
   // We don't test actual call because it's the user's responsibility to check
 }
 
-TEST_CASE("aligned_storage: Correctly aligns large structures", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Correctly aligns large structures", "[aligned_storage]")
 {
   struct alignas(64) LargeAligned
   {
@@ -121,7 +121,7 @@ TEST_CASE("aligned_storage: Correctly aligns large structures", "[aligned_storag
   REQUIRE(reinterpret_cast<std::uintptr_t>(&storage.get()) % 64 == 0);
 }
 
-TEST_CASE("aligned_storage: Works with non-copyable and non-movable types", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Works with non-copyable and non-movable types", "[aligned_storage]")
 {
   struct NonMovable
   {
@@ -140,7 +140,7 @@ TEST_CASE("aligned_storage: Works with non-copyable and non-movable types", "[al
   REQUIRE(storage.get().value == 7);
 }
 
-TEST_CASE("aligned_storage: Works with trivial types", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Works with trivial types", "[aligned_storage]")
 {
   elib::memory::aligned_storage<int> storage;
 
@@ -148,7 +148,7 @@ TEST_CASE("aligned_storage: Works with trivial types", "[aligned_storage]")
   REQUIRE(storage.get() == 42);
 }
 
-TEST_CASE("aligned_storage: Works with large objects", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Works with large objects", "[aligned_storage]")
 {
   struct LargeObject
   {
@@ -161,7 +161,7 @@ TEST_CASE("aligned_storage: Works with large objects", "[aligned_storage]")
   REQUIRE(storage.is_constructed());
 }
 
-TEST_CASE("aligned_storage: Properly destroys object in destructor", "[aligned_storage]")
+TEST_CASE("elib::aligned_storage: Properly destroys object in destructor", "[aligned_storage]")
 {
   TestType::destroyed = false;
   {
