@@ -55,7 +55,7 @@ TEST_CASE("elib::event_loop basic functionality", "[event_loop]")
   }
 }
 
-TEST_CASE("elib::event_loop processing strategies", "[event_loop]")
+TEST_CASE("elib::event_loop max events per call", "[event_loop]")
 {
   elib::EventLoop<int, 32> loop;
   int process_count = 0;
@@ -64,10 +64,8 @@ TEST_CASE("elib::event_loop processing strategies", "[event_loop]")
       process_count++;
   });
 
-  SECTION("Strategy: SingleEvent (Default)")
+  SECTION("default: 1 event per call")
   {
-      loop.setProcessStrategy(elib::event::ProcessStrategy::SingleEvent);
-
       // Push 3 events
       loop.push(1);
       loop.push(2);
@@ -80,46 +78,53 @@ TEST_CASE("elib::event_loop processing strategies", "[event_loop]")
       // Second pass: Should process 2nd
       loop.run();
       REQUIRE(process_count == 2);
-  }
 
-  SECTION("Strategy: AllEvents")
-  {
-      loop.setProcessStrategy(elib::event::ProcessStrategy::AllEvents);
-
-      // Push 5 events
-      for(int i=0; i<5; ++i) loop.push(i);
-
-      // One pass should clear them all
+      // Second pass: Should process 2nd
       loop.run();
-      REQUIRE(process_count == 5);
+      REQUIRE(process_count == 3);
   }
 
-  SECTION("Strategy: AllEvents respects maxEventPerCallNum cap")
+  SECTION("custom: valid")
   {
-      loop.setProcessStrategy(elib::event::ProcessStrategy::AllEvents);
-      
-      // Push more than the config limit (default is 25 in your config)
-      // Let's assume maxEventPerCallNum is 25. We push 30.
-      const size_t limit = elib::event::config::maxEventPerCallNum;
-      const size_t push_count = limit + 5;
-      
-      // Ensure our buffer is big enough for test
-      // (If buffer is smaller than limit, this test tests buffer size, not call limit)
-      // Since we defined EventLoop<int, 32>, and default limit is 25, this works.
+    const std::size_t count = elib::event::config::maxEventPerCallNum / 2;
+    loop.setMaxEventsPerCall(count);
 
-      for(size_t i=0; i < push_count; ++i) {
+    // Push 5 events
+    for(int i=0; i<count; ++i) loop.push(i);
+
+    // One pass should clear them all
+    loop.run();
+    REQUIRE(process_count == count);
+  }
+
+  SECTION("custom: invalid - under minimum")
+  {
+      loop.setMaxEventsPerCall(0); // invalid, should return to default: 1
+      loop.push(1);
+      loop.run();
+
+      // pushed event must be processed
+      REQUIRE(process_count == 1);
+  }
+
+  SECTION("custom: invalid - over limit")
+  {
+      const std::size_t count = elib::event::config::maxEventPerCallNum + 1;
+      loop.setMaxEventsPerCall(count);
+      
+      for(size_t i=0; i < count; ++i) {
           loop.push(static_cast<int>(i));
       }
 
       // Process
       loop.run();
 
-      // Should have processed exactly 'limit' events, leaving 5 remaining
-      REQUIRE(process_count == limit);
+      // not more than limit is processed
+      REQUIRE(process_count == elib::event::config::maxEventPerCallNum);
       
       // Next call cleans up the rest
       loop.run();
-      REQUIRE(process_count == push_count);
+      REQUIRE(process_count == count);
   }
 }
 
@@ -261,7 +266,7 @@ TEST_CASE("elib::event_loop push over capacity - force push", "[event_loop]")
 
   std::vector<int> processed;
   tinyLoop.setHandler([&](int e){ processed.push_back(e); });
-  tinyLoop.setProcessStrategy(elib::event::ProcessStrategy::AllEvents);
+  tinyLoop.setMaxEventsPerCall(3);
   
   tinyLoop.pushOver(3); // force 3. push_over works in circular order, so 1 will be overwritten
   tinyLoop.run();
