@@ -1,4 +1,4 @@
-name: CMake on multiple platforms
+name: cmake[windows:cl, ubuntu:gcc]
 
 on:
   push:
@@ -50,10 +50,8 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      # Builds 'elib' AND 'tests'
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # --output-on-failure ensures you see the Trompeloeil/Catch2 error messages in the GitHub Actions log
       run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
