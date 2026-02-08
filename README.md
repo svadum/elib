@@ -1,3 +1,5 @@
+[![cmake[windows:cl, ubuntu:gcc]](https://github.com/svadum/elib/actions/workflows/cmake_multiplatform.yml/badge.svg)](https://github.com/svadum/elib/actions/workflows/cmake_multiplatform.yml)
+
 # **elib - C++ library for bare metal embedded systems** 
 elib contains a set of useful and embedded-friendly templates, types and utilities:
 
