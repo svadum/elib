@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Project information
-project(elib VERSION 1.10.2 LANGUAGES CXX)
+project(elib VERSION 1.11.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 

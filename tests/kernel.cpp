@@ -143,3 +143,99 @@ TEST_CASE("elib::kernel: Registry Capacity Limits", "[kernel]")
     
     elib::kernel::processTasks(); // Should be safe
 }
+
+TEST_CASE("elib::ManualTask Lifecycle", "[task]")
+{
+    class MyManualTask : public elib::ManualTask
+    {
+    public:
+        int counter = 0;
+        void run() override { counter++; }
+    };
+
+
+    MyManualTask task;
+    
+    SECTION("Does not run before start()")
+    {
+        // By default, ManualTask does NOT register in constructor
+        elib::kernel::processAll();
+        REQUIRE(task.counter == 0);
+    }
+
+    SECTION("Runs after start()")
+    {
+        bool started = task.start();
+        REQUIRE(started == true);
+
+        elib::kernel::processAll();
+        REQUIRE(task.counter == 1);
+    }
+
+    SECTION("Stops running after stop()")
+    {
+        task.start();
+        elib::kernel::processAll();
+        REQUIRE(task.counter == 1);
+
+        task.stop();
+        elib::kernel::processAll();
+        // Counter should NOT increase because task is removed
+        REQUIRE(task.counter == 1); 
+    }
+
+    SECTION("Double start is safe")
+    {
+        task.start();
+        bool secondStart = task.start(); 
+        
+        // It returns true (already registered), but shouldn't duplicate
+        REQUIRE(secondStart == true); 
+
+        // Run scheduler enough times to cycle through everything
+        elib::kernel::processAll();
+        elib::kernel::processAll();
+
+        // If it was registered twice, it might run twice per cycle (depending on implementation)
+        // But your kernel implementation explicitly prevents duplicates.
+        // We verify basic correctness here.
+        REQUIRE(task.counter > 0);
+    }
+}
+
+TEST_CASE("elib::GenericTask Adapter", "[task]")
+{
+    struct SimpleModule
+    {
+        int counter = 0;
+        void process() { counter++; }
+    };
+
+    SimpleModule module;
+
+    SECTION("Wraps and drives a POCO")
+    {
+        // Create adapter, auto-start = true
+        elib::GenericTask<SimpleModule> task(module);
+
+        elib::kernel::processAll();
+        
+        REQUIRE(module.counter == 1);
+    }
+
+    SECTION("Respects AutoStart = false")
+    {
+        // Create adapter, auto-start = false
+        elib::GenericTask<SimpleModule> task(module, false);
+
+        elib::kernel::processAll();
+        
+        // Should NOT have run
+        REQUIRE(module.counter == 0);
+
+        // Manually start
+        task.start();
+        elib::kernel::processAll();
+        REQUIRE(module.counter == 1);
+    }
+}

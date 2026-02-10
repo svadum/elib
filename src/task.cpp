@@ -29,4 +29,38 @@ namespace elib
 
     return *this;
   }
+
+
+  ManualTask::~ManualTask()
+  {
+    kernel::unregisterTask(*this);
+  }
+
+  ManualTask::ManualTask(ManualTask&& other)
+  {
+    kernel::impl::moveTask(other, *this);
+  }
+
+  ManualTask& ManualTask::operator=(ManualTask&& other)
+  {
+    if (this != &other)
+    {
+      kernel::unregisterTask(*this);
+      kernel::impl::moveTask(other, *this);
+    }
+
+    return *this;
+  }
+
+  bool ManualTask::start()
+  {
+    const bool result = kernel::registerTask(*this);
+
+    return result;
+  }
+
+  void ManualTask::stop()
+  {
+    kernel::unregisterTask(*this);
+  }
 }
