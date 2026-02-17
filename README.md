@@ -4,9 +4,9 @@
 elib contains a set of useful and embedded-friendly templates, types and utilities:
 
 - Fixed-memory containers: `elib::array`, `elib::circular_buffer`
-- Basic event handling: `elib::kernel`, `elib::Task`, `elib::EventLoop`
+- Basic event handling: `elib::kernel`, `elib::task`, `elib::generic_task`, `elib::event_loop`
 - Time management (`elib::time`): core and system clocks, timers
-- Data streams: `elib::data::OutputStream`, `elib::data::InputStream`
+- Data streams: `elib::data::output_stream`, `elib::data::input_stream`
 - Utilities: `elib::aligned_storage`, `elib::scope_exit`
 
 ### License

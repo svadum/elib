@@ -9,17 +9,17 @@ namespace elib
    * @brief Standard Task.
    * Automatically registers itself on construction and unregisters on destruction.
    */
-  class Task : public kernel::ITask
+  class task : public kernel::task_base
   {
   public:
-    Task();
-    virtual ~Task() override;
+    task();
+    virtual ~task() override;
 
-    Task(const Task&) = delete;
-    Task& operator=(const Task&) = delete;
+    task(const task&) = delete;
+    task& operator=(const task&) = delete;
 
-    Task(Task&& other);
-    Task& operator=(Task&& other);
+    task(task&& other);
+    task& operator=(task&& other);
   };
 
   /**
@@ -27,17 +27,17 @@ namespace elib
    * Does NOT register on construction. Must be manually started and stopped.
    * Useful for transient tasks or tasks that shouldn't run immediately at startup.
    */
-  class ManualTask : public kernel::ITask
+  class manual_task : public kernel::task_base
   {
   public:
-    ManualTask() = default;
-    virtual ~ManualTask() override;
+    manual_task() = default;
+    virtual ~manual_task() override;
 
-    ManualTask(const ManualTask&)            = delete;
-    ManualTask& operator=(const ManualTask&) = delete;
+    manual_task(const manual_task&)            = delete;
+    manual_task& operator=(const manual_task&) = delete;
 
-    ManualTask(ManualTask&& other);
-    ManualTask& operator=(ManualTask&& other);
+    manual_task(manual_task&& other);
+    manual_task& operator=(manual_task&& other);
 
     /**
      * @brief Registers the task with the kernel.
@@ -58,7 +58,7 @@ namespace elib
    * @tparam Handler A class type that implements `void process()`.
    */
   template<typename Handler>
-  class GenericTask : public ManualTask
+  class generic_task : public manual_task
   {
   public:
     /**
@@ -66,8 +66,8 @@ namespace elib
      * @param handler Reference to the object to adapt.
      * @param autoStart If true (default), attempts to register immediately.
      */
-    GenericTask(Handler& handler, bool autoStart = true)
-      : m_handler{handler}
+    generic_task(Handler& handler, bool autoStart = true)
+      : handler_{handler}
     {
       if (autoStart)
       {
@@ -79,10 +79,10 @@ namespace elib
 
     virtual void run() override
     {
-      m_handler.process();
+      handler_.process();
     }
 
   private:
-    Handler& m_handler;
+    Handler& handler_;
   };
 }

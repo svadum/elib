@@ -6,9 +6,9 @@
 
 namespace elib::kernel
 {
-  std::array<ITask*, kernel::config::maxTaskNum + event::config::maxEventLoopNum> tasks{};
+  std::array<task_base*, kernel::config::max_task_num + event::config::max_event_loop_num> tasks{};
 
-  bool registerTask(ITask& task)
+  bool register_task(task_base& task)
   {
     auto it = std::find(tasks.begin(), tasks.end(), &task);
     if (it != tasks.end())
@@ -27,7 +27,7 @@ namespace elib::kernel
     return false;
   }
 
-  void unregisterTask(ITask& task)
+  void unregister_task(task_base& task)
   {
     for (auto& slot : tasks)
     {
@@ -39,12 +39,12 @@ namespace elib::kernel
     }
   }
 
-  std::size_t taskMaxNum()
+  std::size_t task_max_num()
   {
     return tasks.max_size();
   }
   
-  void impl::moveTask(ITask& from, ITask& to)
+  void impl::move_task(task_base& from, task_base& to)
   {
     for (auto& slot : tasks)
     {
@@ -56,32 +56,32 @@ namespace elib::kernel
     }
   }
 
-  void processTasks()
+  void process_tasks()
   {
-    static std::size_t currentIndex = 0;
-    const std::size_t initialIndex = currentIndex;
+    static std::size_t current_index = 0;
+    const std::size_t initial_index = current_index;
 
     do
     {
-      auto& task = tasks[currentIndex];
+      auto& task = tasks[current_index];
 
       // advance current index
-      if (++currentIndex >= tasks.size())
+      if (++current_index >= tasks.size())
       {
-        currentIndex = 0;
+        current_index = 0;
       }
 
       if (task)
       {
         return task->run();
       }
-    } while (currentIndex != initialIndex);
+    } while (current_index != initial_index);
   }
 
-  void processAll()
+  void process_all()
   {
-    elib::time::Timer::processTimers();
+    elib::time::timer::process_timers();
 
-    processTasks();
+    process_tasks();
   }
 }

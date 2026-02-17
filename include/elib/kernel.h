@@ -7,20 +7,20 @@
  * CPU time among them fairly.
  *
  * ## Architecture
- * - **ITask**: The raw interface for any object that executes code.
- * - **Task**: The RAII base class that automatically registers/unregisters with the kernel.
- * - **EventLoop**: A specialized Task that processes asynchronous events.
+ * - **task_base**: The raw interface for any object that executes code.
+ * - **task**: The RAII base class that automatically registers/unregisters with the kernel.
+ * - **event_loop**: A specialized Task that processes asynchronous events.
  *
  * ## Scheduling Policy
  * The kernel uses a **Cooperative Round-Robin** strategy:
- * 1. **High Priority**: System Timers are processed first in every `processAll()` cycle.
- * 2. **Normal Priority**: Tasks are executed sequentially. `processAll()` runs
+ * 1. **High Priority**: System Timers are processed first in every `process_all()` cycle.
+ * 2. **Normal Priority**: Tasks are executed sequentially. `process_all()` runs
  * EXACTLY ONE task slice per call to ensure responsiveness.
  *
  * ## Usage Example
  * @code
  * // 1. Define a custom polling task
- * class LedBlinker : public elib::Task {
+ * class led_blinker : public elib::task {
  * void run() override {
  * // Non-blocking logic runs here
  * if (timer_expired) toggle_led();
@@ -28,15 +28,15 @@
  * };
  *
  * // 2. Instantiate objects (automatically registered)
- * LedBlinker blinker;
- * elib::EventLoop<int, 4> loop;
+ * led_blinker blinker;
+ * elib::event_loop<int, 4> loop;
  *
  * // 3. Super Loop
  * int main() {
  * setup();
  * while (true) {
  * // Drives Timers -> Blinker -> Loop -> Timers -> ...
- * elib::kernel::processAll();
+ * elib::kernel::process_all();
  * }
  * }
  * @endcode
@@ -52,10 +52,10 @@ namespace elib::kernel
    * @brief Abstract interface for any executable unit in the system.
    * @note Users generally inherit from elib::Task, not ITask directly.
    */
-  class ITask
+  class task_base
   {
   public:
-    virtual ~ITask() = default;
+    virtual ~task_base() = default;
 
     /**
      * @brief The execution body of the task.
@@ -69,25 +69,25 @@ namespace elib::kernel
    * @param task Reference to the task.
    * @return true if registered successfully, false if registry is full.
    */
-  bool registerTask(ITask& task);
+  bool register_task(task_base& task);
 
   /**
    * @brief Removes a task from the global execution registry.
    * @note Safe to call even if the task was not currently registered.
    */
-  void unregisterTask(ITask& task);
+  void unregister_task(task_base& task);
 
   /**
    * @brief Returns the maximum number of concurrent tasks allowed.
    * Defined by elib::kernel::config::maxTaskNum + elib::event::config::maxEventLoopNum.
    */
-  std::size_t taskMaxNum();
+  std::size_t task_max_num();
 
   /**
    * @brief Manually runs the next task in the round-robin sequence.
    * @note Generally called internally by processAll().
    */
-  void processTasks();
+  void process_tasks();
 
   /**
    * @brief The Master System Driver.
@@ -97,7 +97,7 @@ namespace elib::kernel
    * 1. Updates System Timers (elib::time::processTimers).
    * 2. Runs the next available Task in the registry.
    */
-  void processAll();
+  void process_all();
 
   namespace impl
   {
@@ -106,6 +106,6 @@ namespace elib::kernel
      * @param from The old memory address.
      * @param to The new memory address.
      */
-    void moveTask(ITask& from, ITask& to);
+    void move_task(task_base& from, task_base& to);
   }
 }

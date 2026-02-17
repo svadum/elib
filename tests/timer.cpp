@@ -9,21 +9,21 @@
 
 #include "mock/assert.h"
 
-using namespace elib::time;
+using namespace elib;
 using namespace std::chrono;
 
 namespace {
     // Helper to mock the system clock and increment time
-    void advanceTime(std::size_t ms)
+    void advance_time(std::size_t ms)
     {
         for (std::size_t tick = 0; tick < ms; tick++)
         {
-            SystemClock::increment();
+            elib::time::system_clock::increment();
 
-            for (std::size_t timerCount = 0; timerCount < config::maxTimerNum; timerCount++)
+            for (std::size_t timerCount = 0; timerCount < time::config::max_timer_num; timerCount++)
             {
               // make sure all timers are processed
-              Timer::processTimers();
+              time::timer::process_timers();
             }
         }
     }
@@ -37,8 +37,8 @@ public:
 
     virtual void testCaseStarting(const Catch::TestCaseInfo &) override
     {
-        SystemClock::reset();
-        Timer::unregisterTimers();
+        elib::time::system_clock::reset();
+        time::timer::unregister_timers();
     }
 };
 
@@ -48,7 +48,7 @@ CATCH_REGISTER_LISTENER(TimerListener);
 TEST_CASE("elib::time::Timer: Register Timer", "[time][timer]")
 {
     bool callbackExecuted = false;
-    auto timer = Timer::registerTimer(milliseconds{100}, [&]() {
+    auto timer = time::timer::register_timer(milliseconds{100}, [&]() {
         callbackExecuted = true;
     });
 
@@ -58,10 +58,10 @@ TEST_CASE("elib::time::Timer: Register Timer", "[time][timer]")
     timer.start();
     REQUIRE(timer.running());
 
-    advanceTime(99);
+    advance_time(99);
     REQUIRE_FALSE(callbackExecuted);
 
-    advanceTime(1);
+    advance_time(1);
     REQUIRE(callbackExecuted);
 
     timer.stop();
@@ -71,89 +71,89 @@ TEST_CASE("elib::time::Timer: Register Timer", "[time][timer]")
 TEST_CASE("elib::time::Timer: Single-Shot Timer", "[time][timer]")
 {
     int counter = 0;
-    bool singleShotCreated = Timer::singleShot(milliseconds{50}, [&]() {
+    bool singleShotCreated = time::timer::single_shot(milliseconds{50}, [&]() {
         counter++;
     });
 
     REQUIRE(singleShotCreated);
 
-    advanceTime(49);
+    advance_time(49);
     REQUIRE(counter == 0);
 
-    advanceTime(1);
+    advance_time(1);
     REQUIRE(counter == 1);
 
-    advanceTime(50);
+    advance_time(50);
     REQUIRE(counter == 1); // Should not trigger again
 }
 
 TEST_CASE("elib::time::Timer: Periodic Timer", "[time][timer]")
 {
     int counter = 0;
-    auto timer = Timer::registerTimer(milliseconds{30}, [&]() {
+    auto timer = time::timer::register_timer(milliseconds{30}, [&]() {
         counter++;
     });
 
     REQUIRE(timer.valid());
     timer.start();
 
-    advanceTime(29);
+    advance_time(29);
     REQUIRE(counter == 0);
 
-    advanceTime(1);
+    advance_time(1);
     REQUIRE(counter == 1);
 
-    advanceTime(30);
+    advance_time(30);
     REQUIRE(counter == 2);
 
-    advanceTime(30);
+    advance_time(30);
     REQUIRE(counter == 3);
 
     timer.stop();
-    advanceTime(30);
+    advance_time(30);
     REQUIRE(counter == 3); // Timer stopped, no more increments
 }
 
 TEST_CASE("elib::time::Timer: Change Interval While Running", "[time][timer]")
 {
     int counter = 0;
-    auto timer = Timer::registerTimer(milliseconds{50}, [&]() {
+    auto timer = time::timer::register_timer(milliseconds{50}, [&]() {
         counter++;
     });
 
     REQUIRE(timer.valid());
     timer.start();
 
-    advanceTime(50);
+    advance_time(50);
     REQUIRE(counter == 1);
 
-    timer.setInterval(milliseconds{30});
+    timer.set_interval(milliseconds{30});
     REQUIRE(timer.interval() == milliseconds{30});
 
-    advanceTime(30);
+    advance_time(30);
     REQUIRE(counter == 2);
 
-    advanceTime(30);
+    advance_time(30);
     REQUIRE(counter == 3);
 }
 
 TEST_CASE("elib::time::Timer: Unregister Timer", "[time][timer]")
 {
     int counter = 0;
-    auto timer = Timer::registerTimer(milliseconds{40}, [&]() {
+    auto timer = time::timer::register_timer(milliseconds{40}, [&]() {
         counter++;
     });
 
     REQUIRE(timer.valid());
     timer.start();
 
-    advanceTime(40);
+    advance_time(40);
     REQUIRE(counter == 1);
 
     timer.unregister();
     REQUIRE_FALSE(timer.valid());
 
-    advanceTime(40);
+    advance_time(40);
     REQUIRE(counter == 1); // Timer unregistered, no more increments
 }
 
@@ -161,14 +161,14 @@ TEST_CASE("elib::time::Timer: Destructor Unregisters Timer", "[time][timer]")
 {
     int counter = 0;
     {
-        auto timer = Timer::registerTimer(milliseconds{50}, [&]() {
+        auto timer = time::timer::register_timer(milliseconds{50}, [&]() {
             counter++;
         });
         REQUIRE(timer.valid());
         timer.start();
     } // Timer goes out of scope and should unregister itself
 
-    advanceTime(50);
+    advance_time(50);
     REQUIRE(counter == 0); // Timer should not trigger
 }
 
@@ -177,11 +177,11 @@ TEST_CASE("elib::time::Timer: Multiple Timers", "[time][timer]")
     int timer1Counter = 0;
     int timer2Counter = 0;
 
-    auto timer1 = Timer::registerTimer(milliseconds{20}, [&]() {
+    auto timer1 = time::timer::register_timer(milliseconds{20}, [&]() {
         timer1Counter++;
     });
 
-    auto timer2 = Timer::registerTimer(milliseconds{50}, [&]() {
+    auto timer2 = time::timer::register_timer(milliseconds{50}, [&]() {
         timer2Counter++;
     });
 
@@ -191,25 +191,25 @@ TEST_CASE("elib::time::Timer: Multiple Timers", "[time][timer]")
     timer1.start();
     timer2.start();
 
-    advanceTime(20);
+    advance_time(20);
     REQUIRE(timer1Counter == 1);
     REQUIRE(timer2Counter == 0);
 
-    advanceTime(30);
+    advance_time(30);
     REQUIRE(timer1Counter == 2);
     REQUIRE(timer2Counter == 1);
 
-    advanceTime(50);
+    advance_time(50);
     REQUIRE(timer1Counter == 5);
     REQUIRE(timer2Counter == 2);
 }
 
 TEST_CASE("elib::time::Timer: Exhaust Timer Slots", "[time][timer]")
 {
-    std::vector<Timer> timers;
-    for (std::size_t i = 0; i < config::maxTimerNum; ++i)
+    std::vector<time::timer> timers;
+    for (std::size_t i = 0; i < time::config::max_timer_num; ++i)
     {
-        auto timer = Timer::registerTimer(milliseconds{10}, []() {});
+        auto timer = time::timer::register_timer(milliseconds{10}, []() {});
         REQUIRE(timer.valid());
 
         // keep timers from destroyin and unregistering
@@ -220,11 +220,11 @@ TEST_CASE("elib::time::Timer: Exhaust Timer Slots", "[time][timer]")
 
    // Only expect the assertion if we are in a Debug build!
 #if !defined(NDEBUG) && !defined(ELIB_CONFIG_NO_ASSERTS)
-    REQUIRE_CALL(mock::AssertMock::instance(), onError(_, _, _))
-            .WITH(std::string(_3).find("elib::time::Timer") != std::string::npos);
+    REQUIRE_CALL(mock::assert_mock::instance(), onError(_, _, _))
+            .WITH(std::string(_3).find("elib::time::timer") != std::string::npos);
 #endif
     // Exceeding the maximum number of timers should fail
-    auto extraTimer = Timer::registerTimer(milliseconds{10}, []() {});
+    auto extraTimer = time::timer::register_timer(milliseconds{10}, []() {});
     REQUIRE_FALSE(extraTimer.valid());
 }
 
@@ -233,18 +233,18 @@ TEST_CASE("elib::time::Timer: Update Callback via setCallback", "[time][timer]")
     bool firstCallbackExecuted = false;
     bool secondCallbackExecuted = false;
 
-    auto timer = Timer::registerTimer(milliseconds{50}, [&]() {
+    auto timer = time::timer::register_timer(milliseconds{50}, [&]() {
         firstCallbackExecuted = true;
     });
 
     timer.start();
 
     // Change the callback before the timer fires
-    timer.setCallback([&]() {
+    timer.set_callback([&]() {
         secondCallbackExecuted = true;
     });
 
-    advanceTime(50);
+    advance_time(50);
 
     CHECK_FALSE(firstCallbackExecuted);
     CHECK(secondCallbackExecuted);
@@ -253,18 +253,18 @@ TEST_CASE("elib::time::Timer: Update Callback via setCallback", "[time][timer]")
 TEST_CASE("elib::time::Timer: setCallback preserves Timer state", "[time][timer]")
 {
     int counter = 0;
-    auto timer = Timer::registerTimer(milliseconds{50}, [&]() { counter++; });
+    auto timer = time::timer::register_timer(milliseconds{50}, [&]() { counter++; });
 
     timer.start();
-    advanceTime(25); // Timer is halfway through its interval
+    advance_time(25); // Timer is halfway through its interval
 
     // Update callback mid-run
-    timer.setCallback([&]() { counter += 10; });
+    timer.set_callback([&]() { counter += 10; });
 
-    advanceTime(25); // Complete the original 50ms
+    advance_time(25); // Complete the original 50ms
     CHECK(counter == 10); // Should have triggered the NEW callback
 
-    advanceTime(50);
+    advance_time(50);
     CHECK(counter == 20); // Periodic behavior should still work
 }
 
@@ -273,35 +273,35 @@ TEST_CASE("elib::time::Timer: setCallback handles Move Scenario", "[time][timer]
     // This simulates what happens inside SerialSensorAPI move operations
     int value = 0;
 
-    struct MockOwner {
+    struct mock_owner {
         int id;
-        Timer timer;
+        time::timer timer;
         int& externalValue;
 
-        MockOwner(int id, int& val) : id(id), externalValue(val) {
-            timer = Timer::registerTimer(milliseconds{10}, [this]() {
+        mock_owner(int id, int& val) : id(id), externalValue(val) {
+            timer = time::timer::register_timer(milliseconds{10}, [this]() {
                 externalValue = this->id;
             });
             timer.start();
         }
 
         // Manual move simulating the SerialSensorAPI fix
-        MockOwner(MockOwner&& other) noexcept 
+        mock_owner(mock_owner&& other) noexcept 
             : id(other.id), timer(std::move(other.timer)), externalValue(other.externalValue) 
         {
-            timer.setCallback([this]() {
+            timer.set_callback([this]() {
                 externalValue = this->id;
             });
         }
     };
 
     {
-        MockOwner owner1(42, value);
+        mock_owner owner1(42, value);
 
         // Move owner1 to owner2. owner1's address is now invalid for the callback.
-        MockOwner owner2(std::move(owner1));
+        mock_owner owner2(std::move(owner1));
 
-        advanceTime(10);
+        advance_time(10);
 
         // If setCallback worked, 'value' should be 42 (from owner2's context)
         // and not a crash or garbage from owner1's old address.
@@ -311,9 +311,9 @@ TEST_CASE("elib::time::Timer: setCallback handles Move Scenario", "[time][timer]
 
 TEST_CASE("elib::time::Timer: setCallback on Invalid Timer", "[time][timer]")
 {
-    Timer timer; // Unregistered/Invalid
+    time::timer timer; // Unregistered/Invalid
     REQUIRE_FALSE(timer.valid());
 
     // This should not crash or cause side effects
-    timer.setCallback([]() { /* empty */ });
+    timer.set_callback([]() { /* empty */ });
 }

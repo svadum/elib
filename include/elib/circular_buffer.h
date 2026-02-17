@@ -161,19 +161,19 @@ namespace elib
   {
     static_assert(Capacity > std::size_t{0}, "Capacity must be greater than zero");
 
-    using Data = std::array<Value, Capacity>;
+    using storage = std::array<Value, Capacity>;
 
   public:
     using iterator       = detail::circular_buffer_iterator<circular_buffer, detail::nonconst_traits<circular_buffer>>;
     using const_iterator = detail::circular_buffer_iterator<const circular_buffer, detail::const_traits<circular_buffer>>;
 
-    using reference       = typename Data::reference;
-    using const_reference = typename Data::const_reference;
-    using pointer         = typename Data::pointer;
-    using const_pointer   = typename Data::const_pointer;
-    using value_type      = typename Data::value_type;
-    using difference_type = typename Data::difference_type;
-    using size_type       = typename Data::size_type;
+    using reference       = typename storage::reference;
+    using const_reference = typename storage::const_reference;
+    using pointer         = typename storage::pointer;
+    using const_pointer   = typename storage::const_pointer;
+    using value_type      = typename storage::value_type;
+    using difference_type = typename storage::difference_type;
+    using size_type       = typename storage::size_type;
 
     constexpr circular_buffer() = default;
 
@@ -367,7 +367,7 @@ namespace elib
     }
 
   private:
-    Data m_data{};
+    storage m_data{};
 
     pointer m_first{m_data.data()};
     pointer m_last{m_data.data()};

@@ -17,13 +17,13 @@ namespace elib
     namespace defaults
     {
       // System clock configuration (1 ms. clock by default)
-      using SystemClockRep = std::uint32_t;
-      using SystemClockPeriod = std::milli;
+      using system_clock_rep = std::uint32_t;
+      using system_clock_period = std::milli;
 
       // Timer configuration
-      using TimerInterval = std::chrono::milliseconds;
+      using time_interval = std::chrono::milliseconds;
 
-      inline constexpr std::size_t maxTimerNum = 10;     // maximum active registered timers
+      inline constexpr std::size_t max_timer_num = 10;     // maximum active registered timers
     }
 
     using namespace defaults;
@@ -31,14 +31,14 @@ namespace elib
 
   namespace event::config
   {
-    inline constexpr std::size_t maxEventLoopNum = 10;    // maximum active registered event loops
-    inline constexpr std::size_t maxEventPerCallNum = 25; // maximum amount of events that can be 
+    inline constexpr std::size_t max_event_loop_num = 10;    // maximum active registered event loops
+    inline constexpr std::size_t max_event_per_call_num = 25; // maximum amount of events that can be 
                                                           // processed during at a time
   }
 
   namespace kernel::config
   {
-    inline constexpr std::size_t maxTaskNum = 10; // maximum active registered tasks
+    inline constexpr std::size_t max_task_num = 10; // maximum active registered tasks
   }
 }
 

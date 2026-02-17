@@ -4,7 +4,7 @@
 TEST_CASE("elib::data: constructors", "[data][stream]") {
     { // OutputDataStream: std::array
         std::array<std::uint8_t, 0> data{};
-        elib::data::OutputStream stream(data);
+        elib::data::output_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -14,7 +14,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 
     { // OutputDataStream: c array
         std::uint8_t data[1]{0xAA};
-        elib::data::OutputStream stream(data);
+        elib::data::output_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -24,7 +24,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 
     { // OutputDataStream: pointer + size
         std::uint8_t data[1]{0xAA};
-        elib::data::OutputStream stream(data, sizeof(data));
+        elib::data::output_stream stream(data, sizeof(data));
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -34,7 +34,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 
     { // OutputDataStream: larger integer
         std::array<std::uint32_t, 1> data{0xABCDEFAB};
-        elib::data::OutputStream stream(data);
+        elib::data::output_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -44,7 +44,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 
     { // InputDataStream: std::array
         std::array<std::uint8_t, 1> data{0xAA};
-        elib::data::InputStream stream(data);
+        elib::data::input_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -54,7 +54,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 
     { // InputDataStream: c array
         std::uint8_t data[1]{0xAA};
-        elib::data::InputStream stream(data);
+        elib::data::input_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -64,7 +64,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 
     { // InputDataStream: pointer + size
         std::uint8_t data[1]{0xAA};
-        elib::data::InputStream stream(data, sizeof(data));
+        elib::data::input_stream stream(data, sizeof(data));
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -75,7 +75,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
     { // InputDataStream: larger integer (std::array)
         constexpr std::uint32_t expected{0xAABBCCDD};
         std::array<decltype(expected), 1> data{expected};
-        elib::data::InputStream stream(data);
+        elib::data::input_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -86,7 +86,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
     { // InputDataStream: larger integer (C array)
         constexpr std::uint32_t expected{0xAABBCCDD};
         decltype(expected) data[1]{expected};
-        elib::data::InputStream stream(data);
+        elib::data::input_stream stream(data);
 
         REQUIRE(stream.pos() == 0);
         REQUIRE_FALSE(stream.overflow());
@@ -98,7 +98,7 @@ TEST_CASE("elib::data: constructors", "[data][stream]") {
 TEST_CASE("elib::data: read operations", "[data][stream]") {
     { // byte by byte
         std::array<std::uint8_t, 5> data{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
-        elib::data::InputStream stream{data};
+        elib::data::input_stream stream{data};
 
         for (const auto byte : data)
             REQUIRE(stream.read<std::uint8_t>() == byte);
@@ -127,7 +127,7 @@ TEST_CASE("elib::data: read operations", "[data][stream]") {
             using DataType = std::remove_reference_t<std::remove_const_t<decltype(data)>>;
             constexpr auto dataSize = sizeof(data);
 
-            elib::data::InputStream stream(reinterpret_cast<std::uint8_t*>(&data), sizeof(data));
+            elib::data::input_stream stream(reinterpret_cast<std::uint8_t*>(&data), sizeof(data));
 
             REQUIRE(stream.read<DataType>() == data);
             REQUIRE(stream.pos() == dataSize);
@@ -159,7 +159,7 @@ TEST_CASE("elib::data: read operations", "[data][stream]") {
 
     {
         std::array<std::uint8_t, 5> data{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
-        elib::data::InputStream stream(data);
+        elib::data::input_stream stream(data);
 
         decltype(data) readData{};
 
@@ -172,7 +172,7 @@ TEST_CASE("elib::data: read operations", "[data][stream]") {
 
     {
         std::uint8_t data[5]{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
-        elib::data::InputStream stream(data);
+        elib::data::input_stream stream(data);
 
         decltype(data) readData{};
 
@@ -187,7 +187,7 @@ TEST_CASE("elib::data: read operations", "[data][stream]") {
 TEST_CASE("elib::data: write operations", "[data][stream]") {
     { // write in empty
         std::array<std::uint8_t, 0> data{};
-        elib::data::OutputStream stream(data);
+        elib::data::output_stream stream(data);
 
         stream << std::uint8_t{};
         REQUIRE(stream.overflow());
@@ -215,7 +215,7 @@ TEST_CASE("elib::data: write operations", "[data][stream]") {
     { // byte by byte
         std::array<std::uint8_t, 5> data{};
         std::array<std::uint8_t, 5> expectedData{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
-        elib::data::OutputStream stream{data};
+        elib::data::output_stream stream{data};
 
         for (const auto byte : expectedData)
             stream << byte;
@@ -237,7 +237,7 @@ TEST_CASE("elib::data: write operations", "[data][stream]") {
             constexpr auto dataSize = sizeof(expectedData);
 
             DataType data{};
-            elib::data::OutputStream stream(reinterpret_cast<std::uint8_t*>(&data), sizeof(data));
+            elib::data::output_stream stream(reinterpret_cast<std::uint8_t*>(&data), sizeof(data));
 
             stream << expectedData;
 
@@ -268,7 +268,7 @@ TEST_CASE("elib::data: write operations", "[data][stream]") {
     {
         std::array<std::uint8_t, 5> expectedData{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
         decltype(expectedData) data{};
-        elib::data::OutputStream stream{data};
+        elib::data::output_stream stream{data};
 
         stream << expectedData;
 
@@ -285,7 +285,7 @@ TEST_CASE("elib::data: write operations", "[data][stream]") {
     {
         std::uint8_t expectedData[5]{0xAA, 0xBB, 0xCC, 0xDD, 0xEE};
         decltype(expectedData) data{};
-        elib::data::OutputStream stream{data};
+        elib::data::output_stream stream{data};
 
         stream << expectedData;
 

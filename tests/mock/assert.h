@@ -4,11 +4,11 @@
 
 namespace mock
 {
-  class AssertMock {
+  class assert_mock {
   public:
-    static AssertMock& instance()
+    static assert_mock& instance()
     {
-      static AssertMock assertMock;
+      static assert_mock assertMock;
 
       return assertMock;
     }
@@ -16,15 +16,15 @@ namespace mock
     MAKE_MOCK3(onError, void(const char*, int, const char*));
 
   private:
-    AssertMock() = default;
-    AssertMock(AssertMock&) = delete;
-    AssertMock& operator=(AssertMock&) = delete;
-    AssertMock(AssertMock&&) = delete;
-    AssertMock& operator=(AssertMock&&) = delete;
+    assert_mock() = default;
+    assert_mock(assert_mock&) = delete;
+    assert_mock& operator=(assert_mock&) = delete;
+    assert_mock(assert_mock&&) = delete;
+    assert_mock& operator=(assert_mock&&) = delete;
   };
 }
 
 namespace elib
 {
-  void onError(const char* file, int line, const char* message);
+  void on_error(const char* file, int line, const char* message);
 }

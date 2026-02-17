@@ -10,49 +10,49 @@
 namespace elib::time
 {
   template<typename Clock>
-  class DeadlineTimer
+  class deadline_timer
   {
   public:
-    using Tick     = typename Clock::rep;
-    using Duration = typename Clock::duration;
+    using tick     = typename Clock::rep;
+    using duration_type = typename Clock::duration;
 
-    DeadlineTimer()  = default;
+    deadline_timer()  = default;
 
-    DeadlineTimer(Tick deadline)
-      : m_deadline{Clock::now() + deadline}
+    deadline_timer(tick deadline)
+      : deadline_{Clock::now() + deadline}
     {
     }
 
-    DeadlineTimer(Duration deadline)
-      : m_deadline{Clock::now() + deadline}
+    deadline_timer(duration_type deadline)
+      : deadline_{Clock::now() + deadline}
     {
     }
 
-    ~DeadlineTimer() = default;
+    ~deadline_timer() = default;
 
 
-    void setDeadline(Tick Ticks)
+    void setDeadline(tick Ticks)
     {
-      m_deadline = Clock::now() + Ticks;
+      deadline_ = Clock::now() + Ticks;
     }
 
-    void setDeadline(Duration deadline)
+    void setDeadline(duration_type deadline)
     {
-      m_deadline = Clock::now() + deadline;
+      deadline_ = Clock::now() + deadline;
     }
 
     bool hasExpired() const
     {
-      return m_deadline <= Clock::now();
+      return deadline_ <= Clock::now();
     }
 
-    Duration remainingTime() const
+    duration_type remainingTime() const
     {
-      return m_deadline - Clock::now();
+      return deadline_ - Clock::now();
     }
 
   private:
-    typename Clock::time_point m_deadline;
+    typename Clock::time_point deadline_;
   };
 }
 

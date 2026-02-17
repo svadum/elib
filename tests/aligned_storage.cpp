@@ -5,36 +5,36 @@
 
 namespace
 {
-  struct TestType
+  struct test_type
   {
     int a;
     std::string str;
 
-    TestType(int x, std::string s)
+    test_type(int x, std::string s)
       : a(x)
       , str(std::move(s))
     {
     }
 
-    ~TestType() { destroyed = true; }
+    ~test_type() { destroyed = true; }
 
     static bool destroyed;
   };
 
-  bool TestType::destroyed = false;
+  bool test_type::destroyed = false;
 
 } // anonymous namespace
 
 TEST_CASE("elib::aligned_storage: Default constructed storage is empty", "[aligned_storage]")
 {
-  elib::memory::aligned_storage<TestType> storage;
+  elib::memory::aligned_storage<test_type> storage;
 
   REQUIRE_FALSE(storage.is_constructed());
 }
 
 TEST_CASE("elib::aligned_storage: Construct an object", "[aligned_storage]")
 {
-  elib::memory::aligned_storage<TestType> storage;
+  elib::memory::aligned_storage<test_type> storage;
 
   auto& obj = storage.construct(42, "Hello");
 
@@ -49,7 +49,7 @@ TEST_CASE("elib::aligned_storage: Construct an object", "[aligned_storage]")
 
 TEST_CASE("elib::aligned_storage: Destroy object", "[aligned_storage]")
 {
-  elib::memory::aligned_storage<TestType> storage;
+  elib::memory::aligned_storage<test_type> storage;
 
   storage.construct(99, "DestroyMe");
   REQUIRE(storage.is_constructed());
@@ -60,20 +60,20 @@ TEST_CASE("elib::aligned_storage: Destroy object", "[aligned_storage]")
 
 TEST_CASE("elib::aligned_storage: Destroy calls destructor", "[aligned_storage]")
 {
-  TestType::destroyed = false;
+  test_type::destroyed = false;
   {
-    elib::memory::aligned_storage<TestType> storage;
+    elib::memory::aligned_storage<test_type> storage;
     storage.construct(10, "CheckDestructor");
 
     REQUIRE(storage.is_constructed());
   } // Goes out of scope, should call destructor
 
-  REQUIRE(TestType::destroyed);
+  REQUIRE(test_type::destroyed);
 }
 
 TEST_CASE("elib::aligned_storage: Construct multiple times", "[aligned_storage]")
 {
-  elib::memory::aligned_storage<TestType> storage;
+  elib::memory::aligned_storage<test_type> storage;
 
   storage.construct(1, "First");
   REQUIRE(storage.get().a == 1);
@@ -123,18 +123,18 @@ TEST_CASE("elib::aligned_storage: Correctly aligns large structures", "[aligned_
 
 TEST_CASE("elib::aligned_storage: Works with non-copyable and non-movable types", "[aligned_storage]")
 {
-  struct NonMovable
+  struct non_movable
   {
     int value;
-    NonMovable(int v)
+    non_movable(int v)
       : value(v)
     {
     }
-    NonMovable(const NonMovable&)            = delete;
-    NonMovable& operator=(const NonMovable&) = delete;
+    non_movable(const non_movable&)            = delete;
+    non_movable& operator=(const non_movable&) = delete;
   };
 
-  elib::memory::aligned_storage<NonMovable> storage;
+  elib::memory::aligned_storage<non_movable> storage;
   storage.construct(7);
 
   REQUIRE(storage.get().value == 7);
@@ -150,12 +150,12 @@ TEST_CASE("elib::aligned_storage: Works with trivial types", "[aligned_storage]"
 
 TEST_CASE("elib::aligned_storage: Works with large objects", "[aligned_storage]")
 {
-  struct LargeObject
+  struct large_obj
   {
     char buffer[1024];
   };
 
-  elib::memory::aligned_storage<LargeObject> storage;
+  elib::memory::aligned_storage<large_obj> storage;
   storage.construct();
 
   REQUIRE(storage.is_constructed());
@@ -163,13 +163,13 @@ TEST_CASE("elib::aligned_storage: Works with large objects", "[aligned_storage]"
 
 TEST_CASE("elib::aligned_storage: Properly destroys object in destructor", "[aligned_storage]")
 {
-  TestType::destroyed = false;
+  test_type::destroyed = false;
   {
-    elib::memory::aligned_storage<TestType> storage;
+    elib::memory::aligned_storage<test_type> storage;
     storage.construct(55, "DestructorTest");
 
     REQUIRE(storage.is_constructed());
   }
 
-  REQUIRE(TestType::destroyed);
+  REQUIRE(test_type::destroyed);
 }

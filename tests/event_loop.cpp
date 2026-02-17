@@ -6,7 +6,7 @@
 #include "mock/assert.h"
 
 // specific event type for testing
-struct TestEvent {
+struct test_event {
     int id;
     int value;
 };
@@ -15,12 +15,12 @@ TEST_CASE("elib::event_loop basic functionality", "[event_loop]")
 {
   // Clear any static state if necessary, though destructors should handle cleanup
   // Setup
-  elib::EventLoop<TestEvent, 8> loop;
+  elib::event_loop<test_event, 8> loop;
   int received_id = 0;
   int received_val = 0;
   int call_count = 0;
 
-  loop.setHandler([&](const TestEvent& e) {
+  loop.set_handler([&](const test_event& e) {
       received_id = e.id;
       received_val = e.value;
       call_count++;
@@ -35,7 +35,7 @@ TEST_CASE("elib::event_loop basic functionality", "[event_loop]")
     REQUIRE(call_count == 0);
 
     // Process
-    elib::kernel::processTasks();
+    elib::kernel::process_tasks();
 
     // After processing
     REQUIRE(call_count == 1);
@@ -46,21 +46,21 @@ TEST_CASE("elib::event_loop basic functionality", "[event_loop]")
   SECTION("Buffer clears after processing")
   {
     loop.push({1, 100});
-    elib::kernel::processTasks();
+    elib::kernel::process_tasks();
     REQUIRE(call_count == 1);
 
     // Call again - buffer should be empty, handler should not run
-    elib::kernel::processTasks();
+    elib::kernel::process_tasks();
     REQUIRE(call_count == 1);
   }
 }
 
 TEST_CASE("elib::event_loop max events per call", "[event_loop]")
 {
-  elib::EventLoop<int, 32> loop;
+  elib::event_loop<int, 32> loop;
   int process_count = 0;
   
-  loop.setHandler([&](const int&) {
+  loop.set_handler([&](const int&) {
       process_count++;
   });
 
@@ -86,8 +86,8 @@ TEST_CASE("elib::event_loop max events per call", "[event_loop]")
 
   SECTION("custom: valid")
   {
-    const std::size_t count = elib::event::config::maxEventPerCallNum / 2;
-    loop.setMaxEventsPerCall(count);
+    const std::size_t count = elib::event::config::max_event_per_call_num / 2;
+    loop.set_max_events_per_call(count);
 
     // Push 5 events
     for(int i=0; i<count; ++i) loop.push(i);
@@ -99,7 +99,7 @@ TEST_CASE("elib::event_loop max events per call", "[event_loop]")
 
   SECTION("custom: invalid - under minimum")
   {
-      loop.setMaxEventsPerCall(0); // invalid, should return to default: 1
+      loop.set_max_events_per_call(0); // invalid, should return to default: 1
       loop.push(1);
       loop.run();
 
@@ -109,8 +109,8 @@ TEST_CASE("elib::event_loop max events per call", "[event_loop]")
 
   SECTION("custom: invalid - over limit")
   {
-      const std::size_t count = elib::event::config::maxEventPerCallNum + 1;
-      loop.setMaxEventsPerCall(count);
+      const std::size_t count = elib::event::config::max_event_per_call_num + 1;
+      loop.set_max_events_per_call(count);
       
       for(size_t i=0; i < count; ++i) {
           loop.push(static_cast<int>(i));
@@ -120,7 +120,7 @@ TEST_CASE("elib::event_loop max events per call", "[event_loop]")
       loop.run();
 
       // not more than limit is processed
-      REQUIRE(process_count == elib::event::config::maxEventPerCallNum);
+      REQUIRE(process_count == elib::event::config::max_event_per_call_num);
       
       // Next call cleans up the rest
       loop.run();
@@ -134,8 +134,8 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
   
   // Factory function lambda to simulate returning from function
   auto createLoop = [&]() {
-      elib::EventLoop<int, 8> temp;
-      temp.setHandler([&](const int& v){ received_val = v; });
+      elib::event_loop<int, 8> temp;
+      temp.set_handler([&](const int& v){ received_val = v; });
       temp.push(42);
       return temp; // Triggers Move Constructor
   };
@@ -143,7 +143,7 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
   SECTION("Move Constructor updates registry")
   {
       // 1. Create and move
-      elib::EventLoop<int, 8> mainLoop = createLoop();
+      elib::event_loop<int, 8> mainLoop = createLoop();
 
       // The 'temp' loop inside the lambda is destroyed.
       // We need to ensure 'mainLoop' is wired into the registry.
@@ -160,10 +160,10 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
 
   SECTION("Move Assignment updates registry")
   {
-      elib::EventLoop<int, 8> loopA;
+      elib::event_loop<int, 8> loopA;
       {
-          elib::EventLoop<int, 8> loopB;
-          loopB.setHandler([&](const int& v){ received_val = v; });
+          elib::event_loop<int, 8> loopB;
+          loopB.set_handler([&](const int& v){ received_val = v; });
           // loopB registers itself.
           
           // Move B into A. 
@@ -174,7 +174,7 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
       } // loopB destructor runs here
 
       loopA.push(99);
-      elib::kernel::processTasks();
+      elib::kernel::process_tasks();
       
       REQUIRE(received_val == 99);
   }
@@ -182,14 +182,14 @@ TEST_CASE("elib::event_loop move semantics", "[event_loop]")
 
 TEST_CASE("elib::event_loop multiple loops interaction", "[event_loop]")
 {
-  elib::EventLoop<int, 4> loop1;
-  elib::EventLoop<int, 4> loop2;
+  elib::event_loop<int, 4> loop1;
+  elib::event_loop<int, 4> loop2;
   
   int val1 = 0;
   int val2 = 0;
 
-  loop1.setHandler([&](const int& v){ val1 = v; });
-  loop2.setHandler([&](const int& v){ val2 = v; });
+  loop1.set_handler([&](const int& v){ val1 = v; });
+  loop2.set_handler([&](const int& v){ val2 = v; });
 
   loop1.push(10);
   loop2.push(20);
@@ -200,14 +200,14 @@ TEST_CASE("elib::event_loop multiple loops interaction", "[event_loop]")
       // We don't know which one comes first (depends on registry slots), 
       // but we know calling it twice should handle both.
 
-      elib::kernel::processTasks();
+      elib::kernel::process_tasks();
       
       // One should be done, one should be pending
       bool caseA = (val1 == 10 && val2 == 0);
       bool caseB = (val1 == 0 && val2 == 20);
       REQUIRE((caseA || caseB));
 
-      elib::kernel::processTasks();
+      elib::kernel::process_tasks();
 
       // Now both should be done
       REQUIRE(val1 == 10);
@@ -221,7 +221,7 @@ TEST_CASE("elib::event_loop capacity limits", "[event_loop]")
 
   SECTION("Buffer overflow behavior")
   {
-    elib::EventLoop<int, 2> tinyLoop;
+    elib::event_loop<int, 2> tinyLoop;
     
     REQUIRE(tinyLoop.push(1) == true);
     REQUIRE(tinyLoop.push(2) == true);
@@ -231,20 +231,20 @@ TEST_CASE("elib::event_loop capacity limits", "[event_loop]")
   SECTION("Registry overflow behavior")
   {
     // 1. Fill the registry
-    std::vector<std::unique_ptr<elib::EventLoop<int, 1>>> spam;
+    std::vector<std::unique_ptr<elib::event_loop<int, 1>>> spam;
     
-    for(size_t i=0; i < elib::kernel::taskMaxNum(); ++i) {
-        spam.push_back(std::make_unique<elib::EventLoop<int, 1>>());
+    for(size_t i=0; i < elib::kernel::task_max_num(); ++i) {
+        spam.push_back(std::make_unique<elib::event_loop<int, 1>>());
     }
 
     // 2. Set Expectation
     // The constructor will trigger the assert. We expect it, match the message, 
     // and allow it to return void (suppressing the crash).
-    REQUIRE_CALL(mock::AssertMock::instance(), onError(_, _, _));
+    REQUIRE_CALL(mock::assert_mock::instance(), onError(_, _, _));
 
     // 3. Trigger
     // This creates the extra loop. The assert fires, caught by mock, returns.
-    elib::EventLoop<int, 1> extraLoop;
+    elib::event_loop<int, 1> extraLoop;
 
     // 4. Verify Local Behavior (Zombie Object)
     // It works locally...
@@ -253,22 +253,22 @@ TEST_CASE("elib::event_loop capacity limits", "[event_loop]")
     
     // 5. Verify System Safety
     // ...but is not in the global loop, so processing is safe.
-    elib::kernel::processTasks();
+    elib::kernel::process_tasks();
   }
 }
 
 TEST_CASE("elib::event_loop push over capacity - force push", "[event_loop]")
 {
-  elib::EventLoop<int, 2> tinyLoop;
+  elib::event_loop<int, 2> tinyLoop;
   REQUIRE(tinyLoop.push(1) == true);
   REQUIRE(tinyLoop.push(2) == true);
   REQUIRE(tinyLoop.push(3) == false);
 
   std::vector<int> processed;
-  tinyLoop.setHandler([&](int e){ processed.push_back(e); });
-  tinyLoop.setMaxEventsPerCall(3);
+  tinyLoop.set_handler([&](int e){ processed.push_back(e); });
+  tinyLoop.set_max_events_per_call(3);
   
-  tinyLoop.pushOver(3); // force 3. push_over works in circular order, so 1 will be overwritten
+  tinyLoop.push_over(3); // force 3. push_over works in circular order, so 1 will be overwritten
   tinyLoop.run();
 
   REQUIRE(processed[0] == 2); // 1 was overwritten, 2 become first processed

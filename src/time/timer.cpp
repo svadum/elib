@@ -10,24 +10,23 @@
 
 namespace elib::time
 {
-  constexpr Timer::Id emptyTimerId = std::numeric_limits<Timer::Id>::max();
+  constexpr timer::id_type empty_timer_id = std::numeric_limits<timer::id_type>::max();
 
-  struct TimerHandle
+  struct timer_handle
   {
     bool registered{false};
     bool active{false};
-    bool singleShot{false};
-    config::TimerInterval interval{0};
-    ElapsedTimer<Timer::Clock> elapsed;
-    Timer::OnTimeout callback;
+    bool single_shot{false};
+    config::time_interval interval{0};
+    elapsed_timer<timer::clock> elapsed;
+    timer::on_timeout callback;
   };
 
-  using Timers = std::array<TimerHandle, config::maxTimerNum>;
-  Timers timers{};
+  std::array<timer_handle, config::max_timer_num> timers{};
 
-  TimerHandle &getHandle(std::size_t index)
+  timer_handle &get_handle(std::size_t index)
   {
-    static TimerHandle invalid{};
+    static timer_handle invalid{};
 
     ELIB_ASSERT_DEBUG(index < timers.size(), "elib::time::Timer: timer ID out of bounds!");
 
@@ -40,183 +39,183 @@ namespace elib::time
     return timers[index];
   }
 
-  Timer::Id registerTimerImpl(config::TimerInterval interval, Timer::OnTimeout callback, bool singleShot = false)
+  timer::id_type registerTimerImpl(config::time_interval interval, timer::on_timeout callback, bool singleShot = false)
   {
-    // NOTE: make sure Timer::Id type can represent entire timers range
-    static_assert(config::maxTimerNum <= std::numeric_limits<Timer::Id>::max());
+    // NOTE: make sure timer::id_type type can represent entire timers range
+    static_assert(config::max_timer_num <= std::numeric_limits<timer::id_type>::max());
 
     for (std::size_t index{0}; index < timers.size(); index++)
     {
-      TimerHandle &timer = timers[index];
+      timer_handle &timer = timers[index];
       if (!timer.registered)
       {
         timer.callback = std::move(callback);
         timer.interval = interval;
-        timer.singleShot = singleShot;
+        timer.single_shot = singleShot;
         timer.registered = true;
 
-        return static_cast<Timer::Id>(index);
+        return static_cast<timer::id_type>(index);
       }
     }
 
-    ELIB_ASSERT_DEBUG(false, "elib::time::Timer: maximum active timer number overflow! Increase elib::config::maxTimerNum");
+    ELIB_ASSERT_DEBUG(false, "elib::time::timer: maximum active timer number overflow! Increase elib::config::max_timer_num");
 
-    return emptyTimerId;
+    return empty_timer_id;
   }
 
-  Timer Timer::registerTimer(config::TimerInterval interval, OnTimeout callback)
+  timer timer::register_timer(config::time_interval interval, on_timeout callback)
   {
-    const Timer::Id tid = registerTimerImpl(interval, std::move(callback));
+    const timer::id_type tid = registerTimerImpl(interval, std::move(callback));
 
-    return Timer{tid};
+    return timer{tid};
   }
 
-  bool Timer::singleShot(config::TimerInterval interval, OnTimeout callback)
+  bool timer::single_shot(config::time_interval interval, on_timeout callback)
   {
-    const Timer::Id tid = registerTimerImpl(interval, std::move(callback), true);
-    const bool success = tid != emptyTimerId;
+    const timer::id_type tid = registerTimerImpl(interval, std::move(callback), true);
+    const bool success = tid != empty_timer_id;
 
     if (success)
     {
-      getHandle(tid).active = true;
+      get_handle(tid).active = true;
     }
 
     return success;
   }
 
-  void Timer::processTimers()
+  void timer::process_timers()
   {
-    static std::size_t currentIndex = 0;
-    const std::size_t initialIndex = currentIndex;
+    static std::size_t curr_index = 0;
+    const std::size_t init_index = curr_index;
 
     do
     {
-      TimerHandle &currentTimer = timers[currentIndex];
+      timer_handle &curr_timer = timers[curr_index];
 
       // advance current index
-      if (++currentIndex >= timers.size())
+      if (++curr_index >= timers.size())
       {
-        currentIndex = 0;
+        curr_index = 0;
       }
 
-      if (currentTimer.registered &&
-          currentTimer.callback &&
-          currentTimer.active &&
-          currentTimer.elapsed.elapsed(currentTimer.interval))
+      if (curr_timer.registered &&
+          curr_timer.callback &&
+          curr_timer.active &&
+          curr_timer.elapsed.elapsed(curr_timer.interval))
       {
-        currentTimer.callback();
-        currentTimer.elapsed.reset();
+        curr_timer.callback();
+        curr_timer.elapsed.reset();
 
-        if (currentTimer.singleShot)
+        if (curr_timer.single_shot)
         {
-          currentTimer.registered = false;
-          currentTimer.active = false;
+          curr_timer.registered = false;
+          curr_timer.active = false;
         }
         return;
       }
-    } while (currentIndex != initialIndex);
+    } while (curr_index != init_index);
   }
 
-  void Timer::unregisterTimers()
+  void timer::unregister_timers()
   {
-    for (TimerHandle& timer : timers)
-      timer = TimerHandle{};
+    for (timer_handle& timer : timers)
+      timer = timer_handle{};
   }
 
 
-  void unregisterTimer(Timer::Id id)
+  void unregister_timer(timer::id_type id)
   {
     if (id >= timers.size())
       return;
 
-    getHandle(id) = TimerHandle{};
+    get_handle(id) = timer_handle{};
   }
 
-  Timer::Timer()
-    : m_id{emptyTimerId}
+  timer::timer()
+    : id_{empty_timer_id}
   {
 
   }
 
-  Timer::Timer(Id id)
-    : m_id{id}
+  timer::timer(id_type id)
+    : id_{id}
   {
 
   }
 
-  Timer::~Timer()
+  timer::~timer()
   {
     unregister();
   }
 
-  Timer::Timer(Timer &&other)
-      : m_id{std::exchange(other.m_id, emptyTimerId)}
+  timer::timer(timer &&other)
+      : id_{std::exchange(other.id_, empty_timer_id)}
   {
   }
 
-  Timer &Timer::operator=(Timer &&other)
+  timer &timer::operator=(timer &&other)
   {
     if (this != &other)
     {
       unregister();
-      m_id = std::exchange(other.m_id, emptyTimerId);
+      id_ = std::exchange(other.id_, empty_timer_id);
     }
 
     return *this;
   }
 
-  void Timer::setInterval(config::TimerInterval interval)
+  void timer::set_interval(config::time_interval interval)
   {
-    getHandle(m_id).interval = interval;
+    get_handle(id_).interval = interval;
   }
 
-  config::TimerInterval Timer::interval() const
+  config::time_interval timer::interval() const
   {
-    return getHandle(m_id).interval;
+    return get_handle(id_).interval;
   }
 
-  void Timer::setCallback(OnTimeout callback)
+  void timer::set_callback(on_timeout callback)
   {
     if (valid())
-      getHandle(m_id).callback = std::move(callback);
+      get_handle(id_).callback = std::move(callback);
   }
 
-  Timer::Id Timer::id() const
+  timer::id_type timer::id() const
   {
-    return m_id;
+    return id_;
   }
 
-  void Timer::start()
+  void timer::start()
   {
-    TimerHandle &timer = getHandle(m_id);
-    timer.active = true;
-    timer.elapsed.start();
+    timer_handle &thandle = get_handle(id_);
+    thandle.active = true;
+    thandle.elapsed.start();
   }
 
-  void Timer::stop()
+  void timer::stop()
   {
-    getHandle(m_id).active = false;
+    get_handle(id_).active = false;
   }
 
-  bool Timer::running() const
+  bool timer::running() const
   {
     if (valid())
-      return getHandle(m_id).active;
+      return get_handle(id_).active;
 
     return false;
   }
 
-  bool Timer::valid() const
+  bool timer::valid() const
   {
-    if (m_id != emptyTimerId)
-      return getHandle(m_id).registered;
+    if (id_ != empty_timer_id)
+      return get_handle(id_).registered;
 
     return false;
   }
 
-  void Timer::unregister()
+  void timer::unregister()
   {
-    unregisterTimer(m_id);
-    m_id = emptyTimerId;
+    unregister_timer(id_);
+    id_ = empty_timer_id;
   }
 }

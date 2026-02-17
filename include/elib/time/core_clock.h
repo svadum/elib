@@ -11,7 +11,7 @@
 
 namespace elib::time
 {
-  // NOTE: CoreClock is suitable for measuring relevantly small
+  // NOTE: core_clock is suitable for measuring relevantly small
   // time intervals because of its high precision (tick frequency)
   //
   // Pay attention to overflows, for example:
@@ -21,19 +21,19 @@ namespace elib::time
   //
   // CycleCounter interface requirement:
   //
-  //   CoreClock::rep CycleCounter::get() noexpect
+  //   core_clock::rep CycleCounter::get() noexpect
   //   {
   //     return your_current_cycle_counter_value;
   //   }
 
   template<std::size_t clockFrequency, typename CycleCounter>
-  class CoreClock
+  class core_clock
   {
   public:
     using period                    = std::ratio<1, clockFrequency>;
     using rep                       = std::uint32_t;
     using duration                  = std::chrono::duration<rep, period>;
-    using time_point                = std::chrono::time_point<CoreClock>;
+    using time_point                = std::chrono::time_point<core_clock>;
     static constexpr bool is_steady = true;
 
     struct duration_from

@@ -22,25 +22,25 @@ namespace elib
   {
     static_assert(Capacity > std::size_t{0}, "Capacity must be greater than zero");
 
-    using Data = std::array<Value, Capacity>;
+    using storage = std::array<Value, Capacity>;
 
   public:
-    using iterator               = typename Data::iterator;
-    using const_iterator         = typename Data::const_iterator;
-    using reverse_iterator       = typename Data::reverse_iterator;
-    using const_reverse_iterator = typename Data::const_reverse_iterator;
+    using iterator               = typename storage::iterator;
+    using const_iterator         = typename storage::const_iterator;
+    using reverse_iterator       = typename storage::reverse_iterator;
+    using const_reverse_iterator = typename storage::const_reverse_iterator;
 
-    using reference       = typename Data::reference;
-    using const_reference = typename Data::const_reference;
-    using pointer         = typename Data::pointer;
-    using const_pointer   = typename Data::const_pointer;
-    using value_type      = typename Data::value_type;
-    using difference_type = typename Data::difference_type;
-    using size_type       = typename Data::size_type;
+    using reference       = typename storage::reference;
+    using const_reference = typename storage::const_reference;
+    using pointer         = typename storage::pointer;
+    using const_pointer   = typename storage::const_pointer;
+    using value_type      = typename storage::value_type;
+    using difference_type = typename storage::difference_type;
+    using size_type       = typename storage::size_type;
 
     constexpr array()
-      : m_data{}
-      , m_end{m_data.begin()}
+      : data_{}
+      , end_{data_.begin()}
     {
     }
 
@@ -54,8 +54,8 @@ namespace elib
       if (this == &other)
         return *this;
 
-      m_data = other.m_data;
-      m_end  = other.m_end;
+      data_ = other.data_;
+      end_  = other.end_;
 
       return *this;
     }
@@ -72,14 +72,14 @@ namespace elib
 
       clear();
 
-      std::swap(m_data, other.m_data);
-      std::swap(m_end, other.m_end);
+      std::swap(data_, other.data_);
+      std::swap(end_, other.end_);
 
       return *this;
     }
 
     constexpr array(const std::initializer_list<value_type> il)
-      : m_data{}
+      : data_{}
     {
       if (il.size() > Capacity)
         return;
@@ -91,99 +91,99 @@ namespace elib
         ++it;
       }
 
-      m_end = it;
+      end_ = it;
     }
 
     template<typename T, std::size_t N>
     constexpr array(const T (&array)[N])
-      : m_data{}
+      : data_{}
     {
       static_assert(N <= Capacity, "Array size more than container capacity");
 
-      m_end = m_data.begin() + N;
-      std::copy(array, array + N, m_data.begin());
+      end_ = data_.begin() + N;
+      std::copy(array, array + N, data_.begin());
     }
 
     template<typename InputIterator>
     constexpr array(InputIterator first, InputIterator last)
-      : m_data{}
+      : data_{}
     {
       const auto count = std::min(std::distance(first, last),
                                   static_cast<typename std::iterator_traits<InputIterator>::difference_type>(Capacity));
 
-      std::copy_n(first, count, m_data.begin());
+      std::copy_n(first, count, data_.begin());
 
-      m_end = m_data.begin() + count;
+      end_ = data_.begin() + count;
     }
 
     constexpr iterator begin() noexcept
     {
-      return m_data.begin();
+      return data_.begin();
     }
 
     constexpr iterator end() noexcept
     {
-      return m_end;
+      return end_;
     }
 
     constexpr const_iterator begin() const noexcept
     {
-      return m_data.begin();
+      return data_.begin();
     }
 
     constexpr const_iterator end() const noexcept
     {
-      return m_end;
+      return end_;
     }
 
     constexpr const_iterator cbegin() const noexcept
     {
-      return m_data.cbegin();
+      return data_.cbegin();
     }
 
     constexpr const_iterator cend() const noexcept
     {
-      return m_end;
+      return end_;
     }
 
     constexpr reverse_iterator rbegin() noexcept
     {
-      return reverse_iterator(m_end);
+      return reverse_iterator(end_);
     }
 
     constexpr reverse_iterator rend() noexcept
     {
-      return m_data.rend();
+      return data_.rend();
     }
 
     constexpr const_reverse_iterator rbegin() const noexcept
     {
-      return const_reverse_iterator(m_end);
+      return const_reverse_iterator(end_);
     }
 
     constexpr const_reverse_iterator rend() const noexcept
     {
-      return m_data.rend();
+      return data_.rend();
     }
 
     constexpr const_reverse_iterator crbegin() const noexcept
     {
-      return const_reverse_iterator(m_end);
+      return const_reverse_iterator(end_);
     }
 
     constexpr const_reverse_iterator crend() const noexcept
     {
-      return m_data.crend();
+      return data_.crend();
     }
 
     constexpr reference front() noexcept
     {
-      return m_data.front();
+      return data_.front();
     }
 
     constexpr const_reference front() const noexcept
     {
-      return m_data.front();
+      return data_.front();
     }
 
     constexpr reference back() noexcept
@@ -198,17 +198,17 @@ namespace elib
 
     constexpr pointer data() noexcept
     {
-      return m_data.data();
+      return data_.data();
     }
 
     constexpr const_pointer data() const noexcept
     {
-      return m_data.data();
+      return data_.data();
     }
 
     constexpr size_type size() const noexcept
     {
-      return m_end - m_data.begin();
+      return end_ - data_.begin();
     }
 
     constexpr size_type capacity() const noexcept
@@ -243,18 +243,18 @@ namespace elib
         return end();
 
       const auto count             = std::distance(first, last);
-      const auto availableCapacity = std::distance(m_end, m_data.end());
+      const auto availableCapacity = std::distance(end_, data_.end());
 
       if (count > availableCapacity)
         return end();
 
-      if (std::distance(pos, m_end) > 0)
+      if (std::distance(pos, end_) > 0)
       {
         auto src  = pos;
         auto dest = std::next(pos, count);
 
         // move stored element
-        while (src != m_end)
+        while (src != end_)
         {
           *dest = std::move(*src);
 
@@ -272,7 +272,7 @@ namespace elib
         ++first;
       }
 
-      std::advance(m_end, count);
+      std::advance(end_, count);
 
       return pos;
     }
@@ -295,16 +295,16 @@ namespace elib
       iterator src         = mutable_pos + 1;
       iterator dest        = mutable_pos;
 
-      while (src != m_end)
+      while (src != end_)
       {
         *dest = std::move(*src);
         ++src;
         ++dest;
       }
 
-      --m_end;
+      --end_;
 
-      return !empty() ? mutable_pos + 1 : m_end;
+      return !empty() ? mutable_pos + 1 : end_;
     }
 
     template<typename T>
@@ -313,8 +313,8 @@ namespace elib
       if (full())
         return false;
 
-      *m_end = std::forward<T>(value);
-      ++m_end;
+      *end_ = std::forward<T>(value);
+      ++end_;
 
       return true;
     }
@@ -324,43 +324,43 @@ namespace elib
       if (empty())
         return false;
 
-      --m_end;
+      --end_;
 
       return true;
     }
 
     constexpr void clear() noexcept
     {
-      m_end = m_data.begin();
+      end_ = data_.begin();
     }
 
     constexpr reference operator[](size_type pos) noexcept
     {
-      return m_data[pos];
+      return data_[pos];
     }
 
     constexpr const_reference operator[](size_type pos) const noexcept
     {
-      return m_data[pos];
+      return data_[pos];
     }
 
     constexpr reference at(size_type pos)
     {
       assert(pos < size());
 
-      return m_data.at(pos);
+      return data_.at(pos);
     }
 
     constexpr const_reference at(size_type pos) const
     {
       assert(pos < size());
 
-      return m_data.at(pos);
+      return data_.at(pos);
     }
 
   private:
-    Data m_data;
-    iterator m_end{m_data.begin()};
+    storage data_;
+    iterator end_{data_.begin()};
 
     template<typename Iterator>
     constexpr bool is_from_this(const Iterator& it)
@@ -375,16 +375,16 @@ namespace elib
         return end();
 
       // insert at end
-      if (position == m_end)
+      if (position == end_)
       {
-        *m_end = std::forward<Value>(value);
-        ++m_end;
+        *end_ = std::forward<ValueType>(value);
+        ++end_;
 
         return position;
       }
 
-      auto src  = m_end;
-      auto dest = m_end;
+      auto src  = end_;
+      auto dest = end_;
 
       while (src != position)
       {
@@ -393,8 +393,8 @@ namespace elib
         --dest;
       }
 
-      *position = std::forward<Value>(value);
-      ++m_end;
+      *position = std::forward<ValueType>(value);
+      ++end_;
 
       return src;
     }

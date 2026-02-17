@@ -4,14 +4,14 @@
 
 namespace elib
 {
-  class Callback
+  class callback
   {
   public:
     template<auto Func, typename Class>
     void connect(Class* instance)
     {
-      m_callback.instance = instance;
-      m_callback.func     = [](void* instance) {
+      callback_.instance = instance;
+      callback_.func     = [](void* instance) {
         if (!instance)
           return;
 
@@ -22,17 +22,17 @@ namespace elib
     template<void (*Func)()>
     void connect()
     {
-      m_callback.instance = nullptr;
-      m_callback.func     = [](void*) {
+      callback_.instance = nullptr;
+      callback_.func     = [](void*) {
         Func();
       };
     }
 
     void operator()()
     {
-      if (m_callback.func)
+      if (callback_.func)
       {
-        m_callback.func(m_callback.instance);
+        callback_.func(callback_.instance);
       }
     }
 
@@ -45,6 +45,6 @@ namespace elib
       Func func{nullptr};
     };
 
-    ErasedCallback m_callback{};
+    ErasedCallback callback_{};
   };
 }

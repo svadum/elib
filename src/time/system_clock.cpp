@@ -2,44 +2,44 @@
 
 namespace elib::time
 {
-  static volatile SystemClock::rep sysClockTick = 0;
+  static volatile system_clock::rep sys_clock_tick = 0;
 
-  void SystemClock::increment()
+  void system_clock::increment()
   {
-    ++sysClockTick;
+    ++sys_clock_tick;
   }
 
-  void SystemClock::set(rep reps)
+  void system_clock::set(rep reps)
   {
-    sysClockTick = reps;
+    sys_clock_tick = reps;
   }
 
-  void SystemClock::reset()
+  void system_clock::reset()
   {
-    sysClockTick = 0;
+    sys_clock_tick = 0;
   }
 
-  SystemClock::rep SystemClock::ticks() noexcept
+  system_clock::rep system_clock::ticks() noexcept
   {
-    return sysClockTick;
+    return sys_clock_tick;
   }
 
-  SystemClock::time_point SystemClock::now() noexcept
+  system_clock::time_point system_clock::now() noexcept
   {
-    return time_point{duration{sysClockTick}};
+    return time_point{duration{sys_clock_tick}};
   }
 
-  SystemClock::duration_from SystemClock::durationFromNow(duration interval)
+  system_clock::duration_from system_clock::duration_from_now(duration interval)
   {
     return duration_from{now(), interval};
   }
 
-  bool SystemClock::hasPassed(const duration_from& duration)
+  bool system_clock::has_passed(const duration_from& duration)
   {
     return (now() - duration.start) >= duration.interval;
   }
 
-  bool SystemClock::hasPassed(const time_point& start, rep ticks)
+  bool system_clock::has_passed(const time_point& start, rep ticks)
   {
     return (now() - start).count() >= ticks;
   }

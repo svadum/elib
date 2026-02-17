@@ -14,33 +14,33 @@
 
 namespace elib::time
 {
-  class Timer
+  class timer
   {
   public:
-    using Clock = SystemClock;
-    using Id = std::uint32_t;
-    using OnTimeout = std::function<void()>;
+    using clock = system_clock;
+    using id_type = std::uint32_t;
+    using on_timeout = std::function<void()>;
 
-    static Timer registerTimer(config::TimerInterval interval, OnTimeout callback);
-    static bool singleShot(config::TimerInterval interval, OnTimeout callback);
-    static void processTimers();
-    static void unregisterTimers();
+    static timer register_timer(config::time_interval interval, on_timeout callback);
+    static bool single_shot(config::time_interval interval, on_timeout callback);
+    static void process_timers();
+    static void unregister_timers();
 
-    Timer();
-    ~Timer();
+    timer();
+    ~timer();
 
-    Timer(const Timer &) = delete;
-    Timer &operator=(const Timer &) = delete;
+    timer(const timer &) = delete;
+    timer &operator=(const timer &) = delete;
 
-    Timer(Timer &&other);
-    Timer &operator=(Timer &&other);
+    timer(timer &&other);
+    timer &operator=(timer &&other);
 
-    void setInterval(config::TimerInterval interval);
-    config::TimerInterval interval() const;
+    void set_interval(config::time_interval interval);
+    config::time_interval interval() const;
 
-    void setCallback(OnTimeout callback);
+    void set_callback(on_timeout callback);
 
-    Id id() const;
+    id_type id() const;
 
     void start();
     void stop();
@@ -51,8 +51,8 @@ namespace elib::time
     bool valid() const;
 
   private:
-    explicit Timer(Id id);
+    explicit timer(id_type id);
 
-    Id m_id;
+    id_type id_;
   };
 }

@@ -2,65 +2,65 @@
 
 namespace elib
 {
-  Task::Task()
+  task::task()
   {
-    [[maybe_unused]] const bool result = kernel::registerTask(*this);
+    [[maybe_unused]] const bool result = kernel::register_task(*this);
 
-    ELIB_ASSERT(result, "elib::Task: unable to register task! Try to increase maximum number of active tasks.");
+    ELIB_ASSERT(result, "elib::task: unable to register task! Try to increase maximum number of active tasks.");
   }
 
-  Task::~Task()
+  task::~task()
   {
-    kernel::unregisterTask(*this);
+    kernel::unregister_task(*this);
   }
 
-  Task::Task(Task&& other)
+  task::task(task&& other)
   {
-    kernel::impl::moveTask(other, *this);
+    kernel::impl::move_task(other, *this);
   }
 
-  Task& Task::operator=(Task&& other)
+  task& task::operator=(task&& other)
   {
     if (this != &other)
     {
-      kernel::unregisterTask(*this);
-      kernel::impl::moveTask(other, *this);
+      kernel::unregister_task(*this);
+      kernel::impl::move_task(other, *this);
     }
 
     return *this;
   }
 
 
-  ManualTask::~ManualTask()
+  manual_task::~manual_task()
   {
-    kernel::unregisterTask(*this);
+    kernel::unregister_task(*this);
   }
 
-  ManualTask::ManualTask(ManualTask&& other)
+  manual_task::manual_task(manual_task&& other)
   {
-    kernel::impl::moveTask(other, *this);
+    kernel::impl::move_task(other, *this);
   }
 
-  ManualTask& ManualTask::operator=(ManualTask&& other)
+  manual_task& manual_task::operator=(manual_task&& other)
   {
     if (this != &other)
     {
-      kernel::unregisterTask(*this);
-      kernel::impl::moveTask(other, *this);
+      kernel::unregister_task(*this);
+      kernel::impl::move_task(other, *this);
     }
 
     return *this;
   }
 
-  bool ManualTask::start()
+  bool manual_task::start()
   {
-    const bool result = kernel::registerTask(*this);
+    const bool result = kernel::register_task(*this);
 
     return result;
   }
 
-  void ManualTask::stop()
+  void manual_task::stop()
   {
-    kernel::unregisterTask(*this);
+    kernel::unregister_task(*this);
   }
 }

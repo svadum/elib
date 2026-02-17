@@ -1,6 +1,6 @@
 #include "assert.h"
 
-void elib::onError(const char* file, int line, const char* message)
+void elib::on_error(const char* file, int line, const char* message)
 {
-  mock::AssertMock::instance().onError(file, line, message);
+  mock::assert_mock::instance().onError(file, line, message);
 }

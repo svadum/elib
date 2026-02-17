@@ -14,8 +14,8 @@ namespace elib
   {
   public:
     explicit scope_exit(Action&& action) noexcept
-      : m_active{true}
-      , m_action(std::forward<Action>(action))
+      : active_{true}
+      , action_(std::forward<Action>(action))
     {
     }
 
@@ -23,29 +23,29 @@ namespace elib
     scope_exit& operator=(const scope_exit&) = delete;
 
     scope_exit(scope_exit&& other) noexcept
-      : m_action(std::move(other.m_action))
+      : action_(std::move(other.action_))
     {
-      other.m_active = false;
+      other.active_ = false;
     }
 
     scope_exit& operator=(scope_exit&& other) noexcept
     {
       if (this != &other)
       {
-        m_action = std::move(other.m_action);
-        other.m_active = false;
+        action_ = std::move(other.action_);
+        other.active_ = false;
       }
       return *this;
     }
 
     ~scope_exit() noexcept
     {
-      if (m_active)
-        m_action();
+      if (active_)
+        action_();
     }
 
   private:
-    bool m_active{false};
-    Action m_action;
+    bool active_{false};
+    Action action_;
   };
 }

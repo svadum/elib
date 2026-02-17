@@ -11,49 +11,49 @@ namespace elib::time
 {
   // NOTE: Pay attention to possible overflows during long intervals with precise clocks
   template<typename Clock>
-  class ElapsedTimer
+  class elapsed_timer
   {
   public:
-    using ClockType = Clock;
-    using Duration  = typename Clock::duration;
+    using clock_type = Clock;
+    using duration_type  = typename Clock::duration;
 
-    ElapsedTimer()  = default;
-    ~ElapsedTimer() = default;
+    elapsed_timer()  = default;
+    ~elapsed_timer() = default;
 
     bool isActive() const
     {
-      return m_isActive;
+      return is_active_;
     }
 
     void start()
     {
-      m_isActive   = true;
-      m_startPoint = Clock::now();
+      is_active_   = true;
+      start_point_ = Clock::now();
     }
 
     void stop()
     {
-      m_isActive   = false;
-      m_startPoint = {};
+      is_active_   = false;
+      start_point_ = {};
     }
 
     void reset()
     {
-      m_startPoint = Clock::now();
+      start_point_ = Clock::now();
     }
 
-    Duration elapsed() const
+    duration_type elapsed() const
     {
-      return Clock::now() - m_startPoint;
+      return Clock::now() - start_point_;
     }
 
-    bool elapsed(Duration duration) const
+    bool elapsed(duration_type duration) const
     {
       return elapsed() >= duration;
     }
 
   private:
-    typename Clock::time_point m_startPoint{};
-    bool m_isActive{};
+    typename Clock::time_point start_point_{};
+    bool is_active_{};
   };
 }

@@ -1,0 +1,71 @@
+---
+Checks: 'readability-identifier-naming'
+
+CheckOptions:
+  # -----------------------------------------------------------------
+  # GLOBAL DEFAULT: snake_case
+  # -----------------------------------------------------------------
+  - key:             readability-identifier-naming.GlobalCase
+    value:           lower_case
+
+  # -----------------------------------------------------------------
+  # TYPES (STL Style)
+  # -----------------------------------------------------------------
+  - key:             readability-identifier-naming.ClassCase
+    value:           lower_case
+  - key:             readability-identifier-naming.StructCase
+    value:           lower_case
+  - key:             readability-identifier-naming.UnionCase
+    value:           lower_case
+  - key:             readability-identifier-naming.EnumCase
+    value:           lower_case
+  - key:             readability-identifier-naming.TypedefCase
+    value:           lower_case
+
+  # -----------------------------------------------------------------
+  # TEMPLATES (The Exception)
+  # -----------------------------------------------------------------
+  # Prevent shadowing 'using value_type = ValueType;'
+  - key:             readability-identifier-naming.TemplateParameterCase
+    value:           CamelCase
+  # Concepts remain snake_case (std::regular)
+  - key:             readability-identifier-naming.ConceptCase
+    value:           lower_case
+
+  # -----------------------------------------------------------------
+  # MEMBERS (Trailing Underscore)
+  # -----------------------------------------------------------------
+  - key:             readability-identifier-naming.MemberCase
+    value:           lower_case
+  - key:             readability-identifier-naming.PrivateMemberSuffix
+    value:           _
+  - key:             readability-identifier-naming.ProtectedMemberSuffix
+    value:           _
+  # Public struct members (PODs) get no suffix
+  - key:             readability-identifier-naming.PublicMemberCase
+    value:           lower_case
+
+  # -----------------------------------------------------------------
+  # CONSTANTS & MACROS
+  # -----------------------------------------------------------------
+  # Constants act like variables
+  - key:             readability-identifier-naming.ClassConstantCase
+    value:           lower_case
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           lower_case
+  - key:             readability-identifier-naming.EnumConstantCase
+    value:           lower_case
+  # Macros scream
+  - key:             readability-identifier-naming.MacroDefinitionCase
+    value:           UPPER_CASE
+
+  # -----------------------------------------------------------------
+  # FUNCTIONS
+  # -----------------------------------------------------------------
+  - key:             readability-identifier-naming.FunctionCase
+    value:           lower_case
+  - key:             readability-identifier-naming.MethodCase
+    value:           lower_case
+  - key:             readability-identifier-naming.ParameterCase
+    value:           lower_case
+...

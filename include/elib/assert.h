@@ -24,7 +24,7 @@ namespace elib
    * @brief User-defined error handler.
    * @note Must be implemented in application code if ELIB_USER_ERROR_HANDLER is defined.
    */
-  extern void onError(const char* file, int line, const char* message);
+  extern void on_error(const char* file, int line, const char* message);
 
 #else
   /**
@@ -32,7 +32,7 @@ namespace elib
    * Calls std::abort(), which terminates the process on Host
    * and calls the system exit handler (e.g. _exit) on Embedded.
    */
-  inline void onError(const char* /*file*/, int /*line*/, const char* /*message*/)
+  inline void on_error(const char* /*file*/, int /*line*/, const char* /*message*/)
   {
     std::abort();
   }
@@ -53,12 +53,12 @@ namespace elib
   #define ELIB_ASSERT(condition, message) \
     do { \
       if (!(condition)) { \
-        ::elib::onError(__FILE__, __LINE__, message); \
+        ::elib::on_error(__FILE__, __LINE__, message); \
       } \
     } while (0)
 
   #define ELIB_PANIC(message) \
-    ::elib::onError(__FILE__, __LINE__, message)
+    ::elib::on_error(__FILE__, __LINE__, message)
 
 #endif
 

@@ -15,23 +15,23 @@
  *
  * Key Features:
  * - **Zero Dynamic Allocation**: Uses static arrays and circular buffers.
- * - **Automatic Registration**: Inherits from elib::Task; registers on construction, unregisters on destruction.
+ * - **Automatic Registration**: Inherits from elib::task; registers on construction, unregisters on destruction.
  * - **Move Semantics**: Safe to return EventLoops from factory functions (Kernel registry is auto-updated).
  * - **Tunable Scheduling**: Supports processing single events (latency focus) or event bursts (throughput focus).
  *
  * Usage Example:
  * @code
  * #include <elib/event_loop.h>
- * * struct MotorEvent { int speed; };
+ * * struct motor_event { int speed; };
  * * void setup() {
- * static elib::EventLoop<MotorEvent, 16> motorLoop;
+ * static elib::event_loop<motor_event, 16> motor_loop;
  * * // 1. Configure Logic
- * motorLoop.setHandler([](const MotorEvent& e) {
+ * motor_loop.set_handler([](const MotorEvent& e) {
  * hal::set_pwm(e.speed);
  * });
  *
  * // 2. Optional: Allow processing up to 5 events per kernel tick to clear bursts
- * motorLoop.setMaxEventsPerCall(5);
+ * motorLoop.set_max_events_per_call(5);
  *
  * // 3. Push Event (safe from ISR)
  * motorLoop.push({100});
@@ -55,16 +55,17 @@ namespace elib
    * @tparam EventQueueSize The capacity of the internal static buffer.
    */
   template<typename Event, std::size_t EventQueueSize>
-  class EventLoop final : public elib::Task
+  class event_loop final : public elib::task
   {
   public:
-    using Handler = std::function<void(const Event&)>;
+    using event_type = Event;
+    using handler_type = std::function<void(const Event&)>;
 
     /**
-     * @brief Constructs an EventLoop and registers it with the elib::Kernel.
+     * @brief Constructs an EventLoop and registers it with the elib::kernel.
      * @note If the Kernel registry is full, this will trigger an ELIB_ASSERT (if enabled).
      */
-    EventLoop() = default;
+    event_loop() = default;
 
     // --------------------------------------------------------
     // Move Semantics
@@ -75,11 +76,11 @@ namespace elib
      * Transfers ownership of the event queue and handler.
      * Automatically updates the Kernel registry to point to the new object address.
      */
-    EventLoop(EventLoop&& other) noexcept 
-      : Task(std::move(other))
-      , m_handler(std::move(other.m_handler))
-      , m_maxEventsPerCall(other.m_maxEventsPerCall)
-      , m_events(std::move(other.m_events))
+    event_loop(event_loop&& other) noexcept 
+      : task(std::move(other))
+      , handler_(std::move(other.handler_))
+      , max_events_per_call_(other.max_events_per_call_)
+      , events_(std::move(other.events_))
     {
     }
 
@@ -87,14 +88,14 @@ namespace elib
      * @brief Move Assignment Operator.
      * Unregisters the current object, moves data from 'other', and patches the Kernel registry.
      */
-    EventLoop& operator=(EventLoop&& other) noexcept
+    event_loop& operator=(event_loop&& other) noexcept
     {
       if (this != &other)
       {
-        Task::operator=(std::move(other));
-        m_handler = std::move(other.m_handler);
-        m_maxEventsPerCall = other.m_maxEventsPerCall;
-        m_events = std::move(other.m_events);
+        task::operator=(std::move(other));
+        handler_ = std::move(other.handler_);
+        max_events_per_call_ = other.max_events_per_call_;
+        events_ = std::move(other.events_);
       }
       return *this;
     }
@@ -109,31 +110,31 @@ namespace elib
      * @note If `nullptr` (or empty std::function) is passed, a default no-op handler 
      * is set to prevent runtime crashes.
      */
-    void setHandler(Handler handler)
+    void set_handler(handler_type handler)
     {
-      m_handler = handler ? std::move(handler) : emptyHandler;
+      handler_ = handler ? std::move(handler) : empty_handler;
     }
 
     /**
      * @brief Configures the "Burst Mode" for this loop.
      * * Controls how many events are popped and processed during a single execution
      * slice of the Kernel.
-     * * @param count Number of events [1, config::maxEventPerCallNum].
+     * * @param count Number of events [1, config::max_events_per_call].
      * - **1 (Default)**: Best for system responsiveness (fair sharing).
      * - **>1**: Best for clearing backlogs quickly, but consumes more CPU time per slice.
      * * @note The value is automatically clamped to the global safety limit.
      */
-    void setMaxEventsPerCall(std::size_t count)
+    void set_max_events_per_call(std::size_t count)
     {
-      m_maxEventsPerCall = std::clamp(count, std::size_t{1}, event::config::maxEventPerCallNum);
+      max_events_per_call_ = std::clamp(count, std::size_t{1}, event::config::max_event_per_call_num);
     }
 
     /**
      * @brief Returns the configured maximum number of events processed per call.
      */
-    std::size_t maxEventsPerCall() const
+    std::size_t max_events_per_call() const
     {
-      return m_maxEventsPerCall;
+      return max_events_per_call_;
     }
 
     // --------------------------------------------------------
@@ -146,7 +147,7 @@ namespace elib
      */
     bool push(const Event& event)
     {
-      return m_events.push(event);
+      return events_.push(event);
     }
 
     /**
@@ -155,23 +156,23 @@ namespace elib
      */
     bool push(Event&& event)
     {
-      return m_events.push(std::move(event));
+      return events_.push(std::move(event));
     }
 
     /**
      * @brief Pushes an event, overwriting the oldest one if the queue is full.
      */
-    void pushOver(const Event& event)
+    void push_over(const Event& event)
     {
-      m_events.push_over(event);
+      events_.push_over(event);
     }
 
     /**
      * @brief Pushes an event, overwriting the oldest one if the queue is full (Move semantics).
      */
-    void pushOver(Event&& event)
+    void push_over(Event&& event)
     {
-      m_events.push_over(std::move(event));
+      events_.push_over(std::move(event));
     }
 
     /**
@@ -179,13 +180,13 @@ namespace elib
      */
     void clear()
     {
-      m_events.clear();
+      events_.clear();
     }
 
-    bool empty() const { return m_events.empty(); }
-    bool full() const { return m_events.full(); }
-    std::size_t size() const { return m_events.size(); }
-    std::size_t capacity() const { return m_events.capacity(); }
+    bool empty() const { return events_.empty(); }
+    bool full() const { return events_.full(); }
+    std::size_t size() const { return events_.size(); }
+    std::size_t capacity() const { return events_.capacity(); }
 
     // --------------------------------------------------------
     // ITask Interface Implementation
@@ -194,27 +195,27 @@ namespace elib
     /**
      * @brief Kernel entry point.
      * Processes up to `maxEventsPerCall()` events from the queue.
-     * @note Users should not call this manually; let `elib::kernel::processAll()` drive it.
+     * @note Users should not call this manually; let `elib::kernel::process_all()` drive it.
      */
     void run() override
     {
-      if (m_events.empty())
+      if (events_.empty())
         return;
 
-      for (std::size_t count = m_maxEventsPerCall; count > 0 && !m_events.empty(); --count)
+      for (std::size_t count = max_events_per_call_; count > 0 && !events_.empty(); --count)
       {
-        Event pending = std::move(m_events.front());
-        m_events.pop();
+        Event pending = std::move(events_.front());
+        events_.pop();
 
-        m_handler(pending);
+        handler_(pending);
       }
     }
 
   private:
-    static void emptyHandler(const Event&) {}
+    static void empty_handler(const Event&) {}
 
-    Handler m_handler{emptyHandler};
-    std::size_t m_maxEventsPerCall{1}; 
-    circular_buffer<Event, EventQueueSize> m_events;
+    handler_type handler_{empty_handler};
+    std::size_t max_events_per_call_{1}; 
+    circular_buffer<Event, EventQueueSize> events_;
   };
 }
