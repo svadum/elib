@@ -39,6 +39,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\assert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\kernel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\task.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\list.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp">

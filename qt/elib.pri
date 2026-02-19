@@ -23,7 +23,8 @@ HEADERS += \
     $$PWD/../../include/elib/utility.h \
     $$PWD/../../include/elib/version.h \
     $$PWD/../../include/elib/kernel.h \
-    $$PWD/../../include/elib/task.h
+    $$PWD/../../include/elib/task.h \
+    $$PWD/../../include/elib/list.h \
 
 SOURCES += \
     $$PWD/../../src/kernel.cpp \

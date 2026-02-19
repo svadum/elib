@@ -37,6 +37,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\timer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\utility.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\list.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\kernel.cpp" />

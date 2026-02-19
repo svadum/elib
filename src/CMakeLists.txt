@@ -34,6 +34,7 @@ target_sources(
             ${ELIB_IMPL_INCLUDE_DIR}/assert.h
             ${ELIB_IMPL_INCLUDE_DIR}/kernel.h
             ${ELIB_IMPL_INCLUDE_DIR}/task.h
+            ${ELIB_IMPL_INCLUDE_DIR}/list.h
 )
 
 target_compile_features(elib PUBLIC cxx_std_17 c_std_17)

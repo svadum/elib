@@ -30,6 +30,7 @@ add_executable(elib.test.unit
   scope.cpp
   event_loop.cpp
   kernel.cpp
+  list.cpp
 )
 add_executable(elib::test::unit ALIAS elib.test.unit)
 
