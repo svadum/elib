@@ -147,7 +147,7 @@ namespace elib
      */
     bool push(const Event& event)
     {
-      return events_.push(event);
+      return events_.push_back(event);
     }
 
     /**
@@ -156,7 +156,7 @@ namespace elib
      */
     bool push(Event&& event)
     {
-      return events_.push(std::move(event));
+      return events_.push_back(std::move(event));
     }
 
     /**
@@ -205,7 +205,7 @@ namespace elib
       for (std::size_t count = max_events_per_call_; count > 0 && !events_.empty(); --count)
       {
         Event pending = std::move(events_.front());
-        events_.pop();
+        events_.pop_front();
 
         handler_(pending);
       }
