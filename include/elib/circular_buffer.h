@@ -5,11 +5,11 @@
 //          https://www.boost.org/LICENSE_1_0.txt)
 /////////////////////////////////////////////////////////////
 
-// NOTE: pragma once is used instead preprocessor guard
-//       in order to avoid conflicts between different header versions
 #pragma once
 
 #include <array>
+#include <algorithm>
+#include <type_traits>
 
 namespace elib
 {
@@ -31,6 +31,19 @@ namespace elib
       }
 
       it = storage_end - 1;
+    }
+
+    template<typename size_type>
+    constexpr void increment(size_type& index, size_type capacity)
+    {
+      if (++index == capacity)
+        index = 0;
+    }
+
+    template<typename size_type>
+    constexpr void decrement(size_type& index, size_type capacity)
+    {
+      index = index > 0 ? index - 1 : capacity - 1;
     }
 
     template<typename pointer, typename difference_type>
@@ -62,6 +75,28 @@ namespace elib
       return storage_end - (n - availableAtFront);
     }
 
+    template<typename size_type, typename difference_type>
+    constexpr size_type add(size_type index, difference_type n, size_type capacity)
+    {
+      const auto availableAtEnd = capacity - index;
+      if (availableAtEnd > n)
+        return index + n;
+
+      return ((n - availableAtEnd) % capacity);
+    }
+
+    template<typename size_type, typename difference_type>
+    constexpr size_type sub(size_type index, difference_type n, size_type capacity)
+    {
+      if (n > capacity)
+        n = n % capacity;
+
+      if (index >= n)
+        return index - n;
+
+      return capacity - (n - index);
+    }
+
     template<typename Container>
     struct nonconst_traits
     {
@@ -89,10 +124,11 @@ namespace elib
     template<typename Buffer, typename Traits>
     class circular_buffer_iterator
     {
-      using nonconst_self = typename Traits::nonconst_self;
+      template<typename UBuffer, typename UTraits>
+      friend class circular_buffer_iterator;
 
     public:
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::random_access_iterator_tag; 
       using reference         = typename Traits::reference;
       using pointer           = typename Traits::pointer;
       using value_type        = typename Traits::value_type;
@@ -100,95 +136,146 @@ namespace elib
       using size_type         = typename Traits::size_type;
 
       constexpr circular_buffer_iterator() = default;
-      circular_buffer_iterator(Buffer* buffer, const pointer it)
-        : m_buffer{buffer}
-        , m_it{it}
+
+      constexpr circular_buffer_iterator(Buffer* buffer, size_type idx)
+        : buffer_{buffer}
+        , idx_{idx}
       {
       }
 
-      constexpr circular_buffer_iterator(const circular_buffer_iterator& it)
-        : m_buffer{it.m_buffer}
-        , m_it{it.m_it}
+      constexpr circular_buffer_iterator(const circular_buffer_iterator& it) = default;
+
+      template<typename UBuffer, typename UTraits,
+               typename = std::enable_if_t<std::is_convertible_v<UBuffer*, Buffer*>>>
+      constexpr circular_buffer_iterator(const circular_buffer_iterator<UBuffer, UTraits>& it)
+        : buffer_{it.buffer_}
+        , idx_{it.idx_}
       {
       }
 
-      constexpr circular_buffer_iterator(const nonconst_self& it)
-        : m_buffer{it.m_buffer}
-        , m_it{it.m_it}
+      constexpr circular_buffer_iterator& operator=(const circular_buffer_iterator& it) = default;
+
+      constexpr reference operator*() const
       {
+        auto ptr = detail::add(static_cast<pointer>(buffer_->first_), idx_, 
+                               buffer_->storage_begin(), buffer_->storage_end());
+        return *(ptr);
       }
-
-      constexpr circular_buffer_iterator& operator=(const circular_buffer_iterator& it)
-      {
-        if (this == &it)
-          return *this;
-
-        m_buffer = it.m_buffer;
-        m_it     = it.m_it;
-
-        return *this;
-      }
-
-      constexpr reference operator*() const { return *m_it; }
-      constexpr pointer operator->() const { return &(operator*()); };
+      
+      constexpr pointer operator->() const { return &(operator*()); }
 
       constexpr circular_buffer_iterator& operator++()
       {
-        increment(m_it, m_buffer->storage_begin(), m_buffer->storage_end());
-        if (m_it == m_buffer->m_last)
-          m_it = nullptr;
-
-        return *this;
-      }
-
-      constexpr circular_buffer_iterator& operator--()
-      {
-        if (m_it == nullptr) {
-          m_it = m_buffer->m_last;
-          detail::decrement(m_it, m_buffer->storage_begin(), m_buffer->storage_end());
-          return *this;
-        }
-
-        if (m_it != m_buffer->m_first) {
-          decrement(m_it, m_buffer->storage_begin(), m_buffer->storage_end());
-        } else {
-          m_it = nullptr;
-        }
-
+        if (idx_ != buffer_->size()) ++idx_;
         return *this;
       }
 
       constexpr circular_buffer_iterator operator++(int)
       {
-        circular_buffer_iterator<Buffer, Traits> tmp = *this;
-        ++*this;
-
+        auto tmp = *this;
+        ++(*this);
         return tmp;
+      }
+
+      constexpr circular_buffer_iterator& operator--()
+      {
+        if (idx_ != 0) --idx_; 
+        return *this;
       }
 
       constexpr circular_buffer_iterator operator--(int)
       {
-        circular_buffer_iterator<Buffer, Traits> tmp = *this;
-        --*this;
-
+        auto tmp = *this;
+        --(*this);
         return tmp;
       }
 
-      template<class Traits0>
-      bool operator==(const circular_buffer_iterator<Buffer, Traits0>& it) const
+      // --- Random Access Arithmetic Operators ---
+      constexpr circular_buffer_iterator& operator+=(difference_type n)
       {
-        return m_it == it.m_it;
+        if (n >= 0) idx_ += n;
+        else idx_ -= (-n);
+        return *this;
       }
 
-      template<class Traits0>
-      bool operator!=(const circular_buffer_iterator<Buffer, Traits0>& it) const
+      constexpr circular_buffer_iterator& operator-=(difference_type n)
       {
-        return m_it != it.m_it;
+        if (n >= 0) idx_ -= n;
+        else idx_ += (-n);
+        return *this;
+      }
+
+      constexpr circular_buffer_iterator operator+(difference_type n) const
+      {
+        auto tmp = *this;
+        return tmp += n;
+      }
+
+      friend constexpr circular_buffer_iterator operator+(difference_type n, const circular_buffer_iterator& it)
+      {
+        return it + n;
+      }
+
+      constexpr circular_buffer_iterator operator-(difference_type n) const
+      {
+        auto tmp = *this;
+        return tmp -= n;
+      }
+
+      // --- Distance Operator ---
+      template<typename UBuffer, typename UTraits>
+      constexpr difference_type operator-(const circular_buffer_iterator<UBuffer, UTraits>& other) const
+      {
+        return static_cast<difference_type>(idx_) - static_cast<difference_type>(other.idx_);
+      }
+
+      // --- Offset Dereference Operator ---
+      constexpr reference operator[](difference_type n) const
+      {
+        return *(*this + n);
+      }
+
+      // --- Relational and Equality Operators ---
+      // (Templated to allow comparing iterator with const_iterator safely)
+      template<typename UBuffer, typename UTraits>
+      constexpr bool operator==(const circular_buffer_iterator<UBuffer, UTraits>& it) const
+      {
+        return buffer_ == it.buffer_ && idx_ == it.idx_;
+      }
+
+      template<typename UBuffer, typename UTraits>
+      constexpr bool operator!=(const circular_buffer_iterator<UBuffer, UTraits>& it) const
+      {
+        return !(*this == it);
+      }
+
+      template<typename UBuffer, typename UTraits>
+      constexpr bool operator<(const circular_buffer_iterator<UBuffer, UTraits>& it) const
+      {
+        return idx_ < it.idx_;
+      }
+
+      template<typename UBuffer, typename UTraits>
+      constexpr bool operator>(const circular_buffer_iterator<UBuffer, UTraits>& it) const
+      {
+        return idx_ > it.idx_;
+      }
+
+      template<typename UBuffer, typename UTraits>
+      constexpr bool operator<=(const circular_buffer_iterator<UBuffer, UTraits>& it) const
+      {
+        return idx_ <= it.idx_;
+      }
+
+      template<typename UBuffer, typename UTraits>
+      constexpr bool operator>=(const circular_buffer_iterator<UBuffer, UTraits>& it) const
+      {
+        return idx_ >= it.idx_;
       }
 
     private:
-      Buffer* m_buffer{nullptr};
-      pointer m_it{nullptr};
+      Buffer* buffer_{nullptr};
+      size_type idx_{};
     };
   }
 
@@ -239,11 +326,11 @@ namespace elib
         return *this;
 
       // TODO: copy only initialized values
-      std::copy(other.m_data.begin(), other.m_data.end(), storage_begin());
-      m_size = other.m_size;
+      std::copy(other.data_.begin(), other.data_.end(), storage_begin());
+      size_ = other.size_;
 
-      m_first = storage_begin() + (other.m_first - other.storage_begin());
-      m_last  = storage_begin() + (other.m_last - other.storage_begin());
+      first_ = storage_begin() + (other.first_ - other.storage_begin());
+      last_  = storage_begin() + (other.last_ - other.storage_begin());
 
       return *this;
     }
@@ -266,11 +353,11 @@ namespace elib
 
       clear();
 
-      std::swap(m_data, other.m_data);
-      std::swap(m_size, other.m_size);
+      std::swap(data_, other.data_);
+      std::swap(size_, other.size_);
 
-      m_first = storage_begin() + (other.m_first - other.storage_begin());
-      m_last  = storage_begin() + (other.m_last - other.storage_begin());
+      first_ = storage_begin() + (other.first_ - other.storage_begin());
+      last_  = storage_begin() + (other.last_ - other.storage_begin());
 
       return *this;
     }
@@ -291,8 +378,8 @@ namespace elib
         ++start;
       }
 
-      m_size = il.size();
-      m_last = detail::add(m_last, m_size, storage_begin(), storage_end());
+      size_ = il.size();
+      last_ = detail::add(last_, size_, storage_begin(), storage_end());
     }
 
     /**
@@ -304,8 +391,8 @@ namespace elib
     {
       static_assert(N <= Capacity, "Array size more than container capacity");
 
-      m_size = N;
-      m_last = detail::add(m_last, N, storage_begin(), storage_end());
+      size_ = N;
+      last_ = detail::add(last_, N, storage_begin(), storage_end());
       std::copy(array, array + N, storage_begin());
     }
 
@@ -318,8 +405,8 @@ namespace elib
       if (!data || !size || size > Capacity)
         return;
 
-      m_size = size;
-      m_last = detail::add(m_last, size, storage_begin(), storage_end());
+      size_ = size;
+      last_ = detail::add(last_, size, storage_begin(), storage_end());
       std::copy(data, data + size, storage_begin());
     }
 
@@ -328,7 +415,7 @@ namespace elib
      */
     constexpr iterator begin()
     {
-      return iterator(this, empty() ? nullptr : m_first);
+      return iterator(this, 0);
     }
 
     /**
@@ -336,7 +423,7 @@ namespace elib
      */
     constexpr iterator end()
     {
-      return iterator(this, nullptr);
+      return iterator(this, size_);
     }
 
     /**
@@ -344,7 +431,7 @@ namespace elib
      */
     constexpr const_iterator begin() const
     {
-      return const_iterator(this, empty() ? nullptr : m_first);
+      return const_iterator(this, 0);
     }
 
     /**
@@ -352,7 +439,7 @@ namespace elib
      */
     constexpr const_iterator end() const
     {
-      return const_iterator(this, nullptr);
+      return const_iterator(this, size_);
     }
 
     /**
@@ -376,7 +463,7 @@ namespace elib
      */
     constexpr reference front()
     {
-      return *m_first;
+      return *first_;
     }
 
     /**
@@ -384,7 +471,7 @@ namespace elib
      */
     constexpr const_reference front() const
     {
-      return *m_first;
+      return *first_;
     }
 
     /**
@@ -392,7 +479,7 @@ namespace elib
      */
     constexpr reference back()
     {
-      return *((m_last == storage_begin() ? storage_end() : m_last) - 1);
+      return *((last_ == storage_begin() ? storage_end() : last_) - 1);
     }
 
     /**
@@ -400,7 +487,7 @@ namespace elib
      */
     constexpr const_reference back() const
     {
-      return *((m_last == storage_begin() ? storage_end() : m_last) - 1);
+      return *((last_ == storage_begin() ? storage_end() : last_) - 1);
     }
 
     /**
@@ -408,7 +495,7 @@ namespace elib
      */
     constexpr size_type size() const
     {
-      return m_size;
+      return size_;
     }
 
     /**
@@ -455,9 +542,9 @@ namespace elib
       if (full())
         return false;
 
-      *m_last = std::forward<T>(value);
-      detail::increment(m_last, storage_begin(), storage_end());
-      ++m_size;
+      *last_ = std::forward<T>(value);
+      detail::increment(last_, storage_begin(), storage_end());
+      ++size_;
 
       return true;
     }
@@ -471,8 +558,8 @@ namespace elib
       if (empty())
         return false;
 
-      detail::decrement(m_last, storage_begin(), storage_end());
-      --m_size;
+      detail::decrement(last_, storage_begin(), storage_end());
+      --size_;
 
       return true;
     }
@@ -499,11 +586,11 @@ namespace elib
       if (full())
         return false;
 
-      auto new_first = m_first;
+      auto new_first = first_;
       detail::decrement(new_first, storage_begin(), storage_end());
       *new_first = std::forward<T>(value);
-      m_first = new_first;
-      ++m_size;
+      first_ = new_first;
+      ++size_;
 
       return true;
     }
@@ -517,8 +604,8 @@ namespace elib
       if (empty())
         return false;
 
-      detail::increment(m_first, storage_begin(), storage_end());
-      --m_size;
+      detail::increment(first_, storage_begin(), storage_end());
+      --size_;
 
       return true;
     }
@@ -534,43 +621,113 @@ namespace elib
     }
 
     /**
+     * @brief Inserts an element at the specified position.
+     * @return Iterator pointing to the inserted value, or end() if the buffer is full.
+     */
+    template<typename T>
+    iterator insert(const_iterator pos, T&& value)
+    {
+      if (full())
+        return end();
+
+      const auto index = std::distance(cbegin(), pos);
+      const auto elements_after = size() - index;
+
+      if (index < elements_after) 
+      {
+        // Closer to the front: shift front elements left
+        auto new_first = first_;
+        detail::decrement(new_first, storage_begin(), storage_end());
+        first_ = new_first;
+        ++size_;
+
+        auto target = std::next(begin(), index);
+        // Move the displaced front elements
+        std::move(std::next(begin()), std::next(target), begin());
+        *target = std::forward<T>(value);
+        return target;
+      } 
+      else 
+      {
+        // Closer to the back: shift back elements right
+        detail::increment(last_, storage_begin(), storage_end());
+        ++size_;
+
+        auto target = std::next(begin(), index);
+        // Move the displaced back elements
+        std::move_backward(target, std::prev(end()), end());
+        *target = std::forward<T>(value);
+        return target;
+      }
+    }
+
+    /**
+     * @brief Removes the element at the specified position.
+     * @return Iterator following the removed element.
+     */
+    iterator erase(const_iterator pos)
+    {
+      if (pos == cend())
+        return end();
+
+      const auto index = std::distance(cbegin(), pos);
+      const auto elements_after = size() - 1 - index;
+      auto target = std::next(begin(), index);
+
+      if (index < elements_after) 
+      {
+        // Closer to the front: shift front elements right to fill gap
+        std::move_backward(begin(), target, std::next(target));
+        pop_front();
+        return std::next(begin(), index);
+      } 
+      else 
+      {
+        // Closer to the back: shift back elements left to fill gap
+        std::move(std::next(target), end(), target);
+        pop_back();
+        return std::next(begin(), index);
+      }
+    }
+
+    /**
      * @brief Clears the buffer.
      */
     void clear()
     {
-      m_size  = 0;
-      m_first = m_last = storage_begin();
+      size_  = 0;
+      first_ = last_ = storage_begin();
     }
 
   private:
-    storage m_data{};
+    storage data_{};
 
-    pointer m_first{m_data.data()};
-    pointer m_last{m_data.data()};
+    pointer first_{data_.data()};
+    pointer last_{data_.data()};
 
-    size_type m_size{0};
+    size_type size_{0};
 
     friend iterator;
     friend const_iterator;
 
     constexpr pointer storage_begin()
     {
-      return m_data.data();
+      return data_.data();
     }
 
     constexpr const_pointer storage_begin() const
     {
-      return m_data.data();
+      return data_.data();
     }
 
     constexpr pointer storage_end()
     {
-      return m_data.data() + m_data.size();
+      return data_.data() + data_.size();
     }
 
     constexpr const_pointer storage_end() const
     {
-      return m_data.data() + m_data.size();
+      return data_.data() + data_.size();
     }
   };
 }

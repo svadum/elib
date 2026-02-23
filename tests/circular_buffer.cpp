@@ -248,3 +248,118 @@ TEST_CASE("elib::circular_buffer: push_front wrap-around", "[circular_buffer]") 
     REQUIRE(*it++ == 1);
     REQUIRE(it == buf.end());
 }
+
+TEST_CASE("elib::circular_buffer: erase elements", "[circular_buffer]") {
+    elib::circular_buffer<int, 5> buf{10, 20, 30, 40, 50};
+    
+    // Erase closer to front (shifts front elements right)
+    auto it = buf.erase(std::next(buf.begin(), 1)); // erase 20
+    REQUIRE(buf.size() == 4);
+    REQUIRE(*it == 30);
+    REQUIRE(buf.front() == 10);
+    
+    // Erase closer to back (shifts back elements left)
+    it = buf.erase(std::next(buf.begin(), 2)); // erase 40
+    REQUIRE(buf.size() == 3);
+    REQUIRE(*it == 50);
+    REQUIRE(buf.back() == 50);
+    
+    // Erase first element
+    it = buf.erase(buf.begin());
+    REQUIRE(buf.size() == 2);
+    REQUIRE(*it == 30);
+    REQUIRE(buf.front() == 30);
+    
+    // Erase last element
+    it = buf.erase(std::next(buf.begin())); // erase 50
+    REQUIRE(buf.size() == 1);
+    REQUIRE(it == buf.end());
+    REQUIRE(buf.front() == 30);
+    REQUIRE(buf.back() == 30);
+}
+
+TEST_CASE("elib::circular_buffer: insert elements", "[circular_buffer]") {
+    elib::circular_buffer<int, 5> buf;
+    
+    // Insert into empty
+    auto it = buf.insert(buf.end(), 10);
+    REQUIRE(buf.size() == 1);
+    REQUIRE(*it == 10);
+    
+    // Insert at back
+    it = buf.insert(buf.end(), 20);
+    REQUIRE(buf.size() == 2);
+    REQUIRE(*it == 20);
+    
+    // Insert at front
+    it = buf.insert(buf.begin(), 5);
+    REQUIRE(buf.size() == 3);
+    REQUIRE(*it == 5);
+    REQUIRE(buf.front() == 5);
+    
+    // Insert in middle (closer to front)
+    it = buf.insert(std::next(buf.begin(), 1), 7);
+    REQUIRE(buf.size() == 4);
+    REQUIRE(*it == 7);
+    REQUIRE(*std::next(buf.begin(), 2) == 10);
+    
+    // Insert in middle (closer to back)
+    it = buf.insert(std::next(buf.begin(), 3), 15);
+    REQUIRE(buf.size() == 5);
+    REQUIRE(*it == 15);
+    REQUIRE(buf.back() == 20);
+    
+    // Insert when full (should safely return end())
+    it = buf.insert(buf.begin(), 1);
+    REQUIRE(it == buf.end());
+    REQUIRE(buf.size() == 5); // no change in size
+}
+
+TEST_CASE("elib::circular_buffer: insert with wrap-around", "[circular_buffer]") {
+    elib::circular_buffer<int, 5> buf;
+    buf.push_back(1);
+    buf.push_back(2);
+    buf.push_back(3);
+    buf.pop_front();
+    buf.pop_front(); // Physical buffer is wrapped
+    buf.push_back(4);
+    buf.push_back(5);
+    buf.push_back(6); 
+    // Logical state is now: [3, 4, 5, 6]
+    
+    // Insert element closer to front, forcing wrap-around of displaced front elements
+    auto it = buf.insert(std::next(buf.begin(), 1), 99);
+    REQUIRE(buf.size() == 5);
+    REQUIRE(*it == 99);
+    
+    std::vector<int> expected = {3, 99, 4, 5, 6};
+    std::vector<int> actual;
+    for(auto v : buf) actual.push_back(v);
+    
+    REQUIRE(actual == expected);
+}
+
+TEST_CASE("elib::circular_buffer: linear search", "[circular_buffer]") {
+    elib::circular_buffer<int, 5> buf;
+    buf.push_back(1);
+    buf.push_back(2);
+    buf.push_back(3);
+    buf.pop_front();
+    buf.pop_front(); // Physical buffer is wrapped
+    buf.push_back(4);
+    buf.push_back(5);
+    buf.push_back(6); 
+
+    SECTION("non const it")
+    {
+        auto it = std::find(buf.begin(), buf.end(), 4);
+        REQUIRE(it != buf.end());
+    }
+
+
+    SECTION("const it")
+    {
+        auto it = std::find(buf.cbegin(), buf.cend(), 5);
+        REQUIRE(it != buf.cend());
+    }
+}
