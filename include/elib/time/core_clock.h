@@ -47,26 +47,26 @@ namespace elib::time
       return time_point{duration{CycleCounter::get()}};
     }
 
-    static duration_from durationFromNow(duration duration)
+    static duration_from duration_from_now(duration duration)
     {
       return duration_from{now(), duration};
     }
 
-    static bool hasPassed(const duration_from& duration)
+    static bool has_paased(const duration_from& duration)
     {
       return (now() - duration.start) >= duration.interval;
     }
 
-    static bool hasPassed(const time_point& start, rep ticks)
+    static bool has_passed(const time_point& start, rep ticks)
     {
       return (now() - start).count() >= ticks;
     }
 
     static void delay(duration duration)
     {
-      const auto delay = durationFromNow(duration);
+      const auto delay = duration_from_now(duration);
 
-      while (!hasPassed(delay));
+      while (!has_paased(delay));
     }
 
     static void delay(rep ticks)

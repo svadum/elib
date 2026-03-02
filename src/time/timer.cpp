@@ -28,7 +28,7 @@ namespace elib::time
   {
     static timer_handle invalid{};
 
-    ELIB_ASSERT_DEBUG(index < timers.size(), "elib::time::Timer: timer ID out of bounds!");
+    ELIB_ASSERT_DEBUG(index < timers.size(), "elib::time::timer: timer ID out of bounds!");
 
     if (index >= timers.size())
     {
