@@ -90,7 +90,7 @@ TEST_CASE("elib::event_loop max events per call", "[event_loop]")
     loop.set_max_events_per_call(count);
 
     // Push 5 events
-    for(int i=0; i<count; ++i) loop.push(i);
+    for(std::size_t i=0; i<count; ++i) loop.push(i);
 
     // One pass should clear them all
     loop.run();

@@ -1,0 +1,93 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "_root-config",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "gcc",
+      "displayName": "GCC (Multi-Config)",
+      "inherits": "_root-config",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/gnu-toolchain.cmake",
+        "BUILDSYS_SANITIZER": "MaxSan"
+      }
+    },
+    {
+      "name": "msvc-17",
+      "displayName": "MSVC 17 (Multi-Config)",
+      "inherits": "_root-config",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/msvc-toolchain.cmake",
+        "BUILDSYS_SANITIZER": "MaxSan"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "gcc-debug",
+      "configurePreset": "gcc",
+      "configuration": "Debug"
+    },
+    {
+      "name": "gcc-release",
+      "configurePreset": "gcc",
+      "configuration": "Release"
+    },
+    {
+      "name": "msvc-17-debug",
+      "configurePreset": "msvc-17",
+      "configuration": "Debug"
+    },
+    {
+      "name": "msvc-17-release",
+      "configurePreset": "msvc-17",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "gcc-debug",
+      "hidden": true,
+      "configurePreset": "gcc",
+      "configuration": "Debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    },
+    {
+      "name": "msvc-17-debug",
+      "hidden": true,
+      "configurePreset": "msvc-17",
+      "configuration": "Debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "gcc",
+      "displayName": "GCC (Debug): Config & Build",
+      "steps": [
+        { "type": "configure", "name": "gcc" },
+        { "type": "build", "name": "gcc-debug" }
+      ]
+    },
+    {
+      "name": "msvc",
+      "displayName": "MSVC (Debug): Config & Build",
+      "steps": [
+        { "type": "configure", "name": "msvc-17" },
+        { "type": "build", "name": "msvc-17-debug" }
+      ]
+    }
+  ]
+}

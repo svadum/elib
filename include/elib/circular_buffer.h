@@ -52,7 +52,7 @@ namespace elib
       static_assert(std::is_pointer_v<pointer>, "circular_buffer::add (internal): Pointer must be a pointer type");
 
       const auto availableAtEnd = storage_end - ptr;
-      if (availableAtEnd > n)
+      if (availableAtEnd > static_cast<std::ptrdiff_t>(n))
         return ptr + n;
 
       const auto capacity = std::distance(storage_begin, storage_end);
@@ -630,8 +630,8 @@ namespace elib
       if (full())
         return end();
 
-      const auto index = std::distance(cbegin(), pos);
-      const auto elements_after = size() - index;
+      const difference_type index = std::distance(cbegin(), pos);
+      const auto elements_after = static_cast<difference_type>(size() - index);
 
       if (index < elements_after) 
       {
@@ -670,8 +670,8 @@ namespace elib
       if (pos == cend())
         return end();
 
-      const auto index = std::distance(cbegin(), pos);
-      const auto elements_after = size() - 1 - index;
+      const difference_type index = std::distance(cbegin(), pos);
+      const auto elements_after = static_cast<difference_type>(size() - 1 - index);
       auto target = std::next(begin(), index);
 
       if (index < elements_after) 
