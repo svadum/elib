@@ -17,4 +17,6 @@ namespace elib
 
   template<typename E>
   using unexpected = nonstd::unexpected<E>;
+
+  using nonstd::make_unexpected;
 }
