@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <array>
 #include <algorithm>
 #include <type_traits>
@@ -128,7 +129,7 @@ namespace elib
       friend class circular_buffer_iterator;
 
     public:
-      using iterator_category = std::random_access_iterator_tag; 
+      using iterator_category = std::random_access_iterator_tag;
       using reference         = typename Traits::reference;
       using pointer           = typename Traits::pointer;
       using value_type        = typename Traits::value_type;
@@ -157,11 +158,11 @@ namespace elib
 
       constexpr reference operator*() const
       {
-        auto ptr = detail::add(static_cast<pointer>(buffer_->first_), idx_, 
+        auto ptr = detail::add(static_cast<pointer>(buffer_->first_), idx_,
                                buffer_->storage_begin(), buffer_->storage_end());
         return *(ptr);
       }
-      
+
       constexpr pointer operator->() const { return &(operator*()); }
 
       constexpr circular_buffer_iterator& operator++()
@@ -179,7 +180,7 @@ namespace elib
 
       constexpr circular_buffer_iterator& operator--()
       {
-        if (idx_ != 0) --idx_; 
+        if (idx_ != 0) --idx_;
         return *this;
       }
 
@@ -633,7 +634,7 @@ namespace elib
       const difference_type index = std::distance(cbegin(), pos);
       const auto elements_after = static_cast<difference_type>(size() - index);
 
-      if (index < elements_after) 
+      if (index < elements_after)
       {
         // Closer to the front: shift front elements left
         auto new_first = first_;
@@ -646,8 +647,8 @@ namespace elib
         std::move(std::next(begin()), std::next(target), begin());
         *target = std::forward<T>(value);
         return target;
-      } 
-      else 
+      }
+      else
       {
         // Closer to the back: shift back elements right
         detail::increment(last_, storage_begin(), storage_end());
@@ -674,14 +675,14 @@ namespace elib
       const auto elements_after = static_cast<difference_type>(size() - 1 - index);
       auto target = std::next(begin(), index);
 
-      if (index < elements_after) 
+      if (index < elements_after)
       {
         // Closer to the front: shift front elements right to fill gap
         std::move_backward(begin(), target, std::next(target));
         pop_front();
         return std::next(begin(), index);
-      } 
-      else 
+      }
+      else
       {
         // Closer to the back: shift back elements left to fill gap
         std::move(std::next(target), end(), target);
