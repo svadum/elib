@@ -21,6 +21,7 @@ add_executable(elib.test.unit
   host/elib.tweaks.h
   mock/assert.h
   mock/assert.cpp
+  algorithm.cpp
   array.cpp
   aligned_storage.cpp
   timer.cpp

@@ -16,6 +16,7 @@ target_sources(
         FILE_SET HEADERS
         BASE_DIRS ${ELIB_INCLUDE_DIR}
         FILES
+            ${ELIB_IMPL_INCLUDE_DIR}/algorithm.h
             ${ELIB_IMPL_INCLUDE_DIR}/array.h
             ${ELIB_IMPL_INCLUDE_DIR}/callback.h
             ${ELIB_IMPL_INCLUDE_DIR}/circular_buffer.h

@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\algorithm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\assert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\callback.h" />

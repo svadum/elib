@@ -21,6 +21,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\timer.h">
       <Filter>time</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\algorithm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\array.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\callback.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\circular_buffer.h" />
