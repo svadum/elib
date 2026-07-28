@@ -26,6 +26,7 @@ add_executable(elib.test.unit
   aligned_storage.cpp
   timer.cpp
   stream.cpp
+  stream_ext.cpp
   circular_buffer.cpp
   external.cpp
   scope.cpp

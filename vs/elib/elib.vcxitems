@@ -20,6 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\callback.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\circular_buffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\data\stream_ext.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\event_loop.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\expected.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\function_ref.h" />

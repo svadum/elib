@@ -16,6 +16,7 @@ HEADERS += \
     $$PWD/../include/elib/scope.h \
     $$PWD/../include/elib/span.h \
     $$PWD/../include/elib/stream.h \
+    $$PWD/../include/elib/data/stream_ext.h \
     $$PWD/../include/elib/time/core_clock.h \
     $$PWD/../include/elib/time/deadline_timer.h \
     $$PWD/../include/elib/time/elapsed_timer.h \

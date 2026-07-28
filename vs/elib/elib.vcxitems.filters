@@ -4,6 +4,9 @@
     <Filter Include="time">
       <UniqueIdentifier>{df3059c8-3215-432e-8092-90bcbe0bf439}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{8d895214-6713-427d-8727-6a7a77fc4bc6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\time\core_clock.h">
@@ -41,6 +44,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\kernel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\task.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\list.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\data\stream_ext.h">
+      <Filter>data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\time\timer.cpp">

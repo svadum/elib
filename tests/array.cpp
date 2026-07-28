@@ -127,3 +127,55 @@ TEST_CASE("elib::array erase first", "[array]") {
     REQUIRE(arr[0] == 2);
     REQUIRE(arr[1] == 3);
 }
+
+TEST_CASE("elib::array resize operations", "[array]") {
+    SECTION("Resize smaller reduces size but keeps capacity") {
+        elib::array<int, 5> arr;
+        arr.push_back(10);
+        arr.push_back(20);
+        arr.push_back(30);
+
+        REQUIRE(arr.resize(1) == true);
+        REQUIRE(arr.size() == 1);
+        REQUIRE(arr.capacity() == 5);
+        REQUIRE(arr[0] == 10);
+    }
+
+    SECTION("Resize larger zero-fills new slots") {
+        elib::array<int, 5> arr;
+        arr.push_back(10);
+
+        REQUIRE(arr.resize(3) == true);
+        REQUIRE(arr.size() == 3);
+        REQUIRE(arr[0] == 10);
+        REQUIRE(arr[1] == 0); // Must be value-initialized (zero-filled)
+        REQUIRE(arr[2] == 0); // Must be value-initialized (zero-filled)
+    }
+
+    SECTION("Resize to capacity is successful") {
+        elib::array<int, 2> arr;
+
+        REQUIRE(arr.resize(2) == true);
+        REQUIRE(arr.size() == 2);
+        REQUIRE(arr.full() == true);
+    }
+
+    SECTION("Resize past capacity fails and does not change size") {
+        elib::array<int, 3> arr;
+        arr.push_back(42);
+
+        REQUIRE(arr.resize(5) == false);
+        REQUIRE(arr.size() == 1); // State remains unchanged on failure
+        REQUIRE(arr[0] == 42);
+    }
+
+    SECTION("Resize to zero acts as clear") {
+        elib::array<int, 4> arr;
+        arr.push_back(1);
+        arr.push_back(2);
+
+        REQUIRE(arr.resize(0) == true);
+        REQUIRE(arr.empty() == true);
+        REQUIRE(arr.size() == 0);
+    }
+}
