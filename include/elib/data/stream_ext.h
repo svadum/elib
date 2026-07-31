@@ -62,7 +62,7 @@ namespace elib::data
    * @pre Type T must be an arithmetic type or an enum.
    * @return Reference to the output stream.
    */
-  template<typename T, std::size_t Extent>
+  template<typename T, auto Extent>
   inline data::output_stream& operator<<(data::output_stream& os, span<T, Extent> sp)
   {
     static_assert(std::is_arithmetic_v<T> || std::is_enum_v<T>, "Stream operations require trivial types");
@@ -79,7 +79,7 @@ namespace elib::data
    * @pre Type T must be an arithmetic type or an enum.
    * @return Reference to the input stream.
    */
-  template<typename T, std::size_t Extent>
+  template<typename T, auto Extent>
   inline data::input_stream& operator>>(data::input_stream& is, span<T, Extent> sp)
   {
     static_assert(std::is_arithmetic_v<T> || std::is_enum_v<T>, "Stream operations require trivial types");
@@ -169,5 +169,33 @@ namespace elib::data
   inline span<input_stream::byte> remaining(input_stream& stream)
   {
     return {stream.data() + stream.pos(), stream.capacity() - stream.pos()};
+  }
+
+  /**
+   * @brief Creates an output_stream wrapping an elib::span.
+   * @tparam T The underlying type of the span.
+   * @tparam Extent The static extent of the span.
+   * @param sp The span to wrap.
+   * @return A newly constructed output_stream.
+   */
+  template<typename T, auto Extent>
+  inline output_stream make_output_stream(span<T, Extent> sp)
+  {
+    static_assert(std::is_arithmetic_v<T> || std::is_enum_v<T>, "Stream operations require trivial types");
+    return output_stream(reinterpret_cast<std::uint8_t*>(sp.data()), detail::size_bytes(sp));
+  }
+
+  /**
+   * @brief Creates an input_stream wrapping a read-only elib::span.
+   * @tparam T The underlying type of the span.
+   * @tparam Extent The static extent of the span.
+   * @param sp The span to wrap.
+   * @return A newly constructed input_stream.
+   */
+  template<typename T, auto Extent>
+  inline input_stream make_input_stream(span<const T, Extent> sp)
+  {
+    static_assert(std::is_arithmetic_v<T> || std::is_enum_v<T>, "Stream operations require trivial types");
+    return input_stream(reinterpret_cast<const std::uint8_t*>(sp.data()), detail::size_bytes(sp));
   }
 }

@@ -173,3 +173,67 @@ TEST_CASE("elib::data: extension serialized data", "[data][stream][extensions]")
     }
 
 }
+
+TEST_CASE("elib::data: make_output_stream from span", "[data][stream][extensions]") {
+    std::array<std::uint32_t, 2> buffer{0, 0};
+    elib::span<std::uint32_t> sp(buffer); // Uses span-lite mapping
+
+    // Create stream using the factory function
+    auto stream = elib::data::make_output_stream(sp);
+
+    // 2 elements * 4 bytes each = 8 bytes capacity
+    REQUIRE(stream.pos() == 0);
+    REQUIRE(stream.capacity() == 8);
+    REQUIRE_FALSE(stream.overflow());
+
+    // Verify write goes to the underlying span memory
+    stream << std::uint32_t{0xAABBCCDD};
+    REQUIRE(stream.pos() == 4);
+    REQUIRE_FALSE(stream.overflow());
+    REQUIRE(buffer[0] == 0xAABBCCDD);
+}
+
+TEST_CASE("elib::data: make_input_stream from span", "[data][stream][extensions]") {
+    std::array<std::uint16_t, 3> buffer{0x1122, 0x3344, 0x5566};
+
+    // Note: Creating a read-only span
+    elib::span<const std::uint16_t> sp(buffer);
+
+    // Create stream using the factory function
+    auto stream = elib::data::make_input_stream(sp);
+
+    // 3 elements * 2 bytes each = 6 bytes capacity
+    REQUIRE(stream.pos() == 0);
+    REQUIRE(stream.capacity() == 6);
+    REQUIRE_FALSE(stream.overflow());
+
+    // Verify read extracts from the underlying span memory
+    std::uint16_t val{};
+    stream >> val;
+
+    REQUIRE(val == 0x1122);
+    REQUIRE(stream.pos() == 2);
+    REQUIRE_FALSE(stream.overflow());
+}
+
+TEST_CASE("elib::data: state inspection helpers", "[data][stream][extensions]") {
+    std::array<std::uint8_t, 10> buffer{};
+    auto stream = elib::data::output_stream(buffer);
+
+
+    stream << std::uint32_t{0x12345678};
+
+    SECTION("serialized() helper") {
+        auto ser_span = elib::data::serialized(stream);
+
+        REQUIRE(ser_span.size() == 4);
+        REQUIRE(ser_span.data() == buffer.data());
+    }
+
+    SECTION("remaining() helper") {
+        auto rem_span = elib::data::remaining(stream);
+
+        REQUIRE(rem_span.size() == 6);
+        REQUIRE(rem_span.data() == buffer.data() + 4);
+    }
+}

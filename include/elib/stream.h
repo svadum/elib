@@ -329,10 +329,6 @@ namespace elib::data
       {
         value = static_cast<T>(*current_address());
       }
-      else if constexpr (std::is_same_v<T, float>)
-      {
-        value = *(reinterpret_cast<const float*>(current_address()));
-      }
       else
       {
         std::memcpy(&value, current_address(), vsize);
