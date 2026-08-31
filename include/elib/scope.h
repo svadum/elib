@@ -44,6 +44,11 @@ namespace elib
         action_();
     }
 
+    void release() noexcept
+    {
+      active_ = false;
+    }
+
   private:
     bool active_{false};
     Action action_;

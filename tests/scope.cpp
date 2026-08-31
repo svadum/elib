@@ -9,3 +9,12 @@ TEST_CASE("elib::scope_exit works correctly", "[scope]") {
   }
   REQUIRE(flag == true);
 }
+
+TEST_CASE("elib::scope_exit release", "[scope]") {
+  bool flag = false;
+  {
+    elib::scope_exit on_exit([&flag] { flag = true; });
+    on_exit.release();
+  }
+  REQUIRE(flag == false);
+}

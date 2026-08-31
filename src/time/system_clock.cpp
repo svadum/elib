@@ -6,7 +6,7 @@ namespace elib::time
 
   void system_clock::increment()
   {
-    ++sys_clock_tick;
+    sys_clock_tick = sys_clock_tick + 1;
   }
 
   void system_clock::set(rep reps)
