@@ -16,88 +16,6 @@ namespace elib
 {
   namespace detail
   {
-    template<typename pointer>
-    constexpr void increment(pointer& it, pointer storage_begin, pointer storage_end)
-    {
-      if (++it == storage_end)
-        it = storage_begin;
-    }
-
-    template<typename pointer>
-    constexpr void decrement(pointer& it, pointer storage_begin, pointer storage_end)
-    {
-      if (it != storage_begin) {
-        --it;
-        return;
-      }
-
-      it = storage_end - 1;
-    }
-
-    template<typename size_type>
-    constexpr void increment(size_type& index, size_type capacity)
-    {
-      if (++index == capacity)
-        index = 0;
-    }
-
-    template<typename size_type>
-    constexpr void decrement(size_type& index, size_type capacity)
-    {
-      index = index > 0 ? index - 1 : capacity - 1;
-    }
-
-    template<typename pointer, typename difference_type>
-    constexpr pointer add(pointer ptr, difference_type n, pointer storage_begin, pointer storage_end)
-    {
-      static_assert(std::is_pointer_v<pointer>, "circular_buffer::add (internal): Pointer must be a pointer type");
-
-      const auto availableAtEnd = storage_end - ptr;
-      if (availableAtEnd > static_cast<std::ptrdiff_t>(n))
-        return ptr + n;
-
-      const auto capacity = std::distance(storage_begin, storage_end);
-      return storage_begin + ((n - availableAtEnd) % capacity);
-    }
-
-    template<typename pointer, typename difference_type>
-    constexpr pointer sub(pointer ptr, difference_type n, pointer storage_begin, pointer storage_end)
-    {
-      static_assert(std::is_pointer_v<pointer>, "circular_buffer::sub (internal): Pointer must be a pointer type");
-
-      const auto capacity = std::distance(storage_begin, storage_end);
-      if (n > capacity)
-        n = n % capacity;
-
-      const auto availableAtFront = ptr - storage_begin;
-      if (availableAtFront >= n)
-        return ptr - n;
-
-      return storage_end - (n - availableAtFront);
-    }
-
-    template<typename size_type, typename difference_type>
-    constexpr size_type add(size_type index, difference_type n, size_type capacity)
-    {
-      const auto availableAtEnd = capacity - index;
-      if (availableAtEnd > n)
-        return index + n;
-
-      return ((n - availableAtEnd) % capacity);
-    }
-
-    template<typename size_type, typename difference_type>
-    constexpr size_type sub(size_type index, difference_type n, size_type capacity)
-    {
-      if (n > capacity)
-        n = n % capacity;
-
-      if (index >= n)
-        return index - n;
-
-      return capacity - (n - index);
-    }
-
     template<typename Container>
     struct nonconst_traits
     {
@@ -158,9 +76,7 @@ namespace elib
 
       constexpr reference operator*() const
       {
-        auto ptr = detail::add(static_cast<pointer>(buffer_->first_), idx_,
-                               buffer_->storage_begin(), buffer_->storage_end());
-        return *(ptr);
+        return buffer_->data_[(buffer_->first_idx_ + idx_) % buffer_->capacity()];
       }
 
       constexpr pointer operator->() const { return &(operator*()); }
@@ -237,7 +153,6 @@ namespace elib
       }
 
       // --- Relational and Equality Operators ---
-      // (Templated to allow comparing iterator with const_iterator safely)
       template<typename UBuffer, typename UTraits>
       constexpr bool operator==(const circular_buffer_iterator<UBuffer, UTraits>& it) const
       {
@@ -276,7 +191,7 @@ namespace elib
 
     private:
       Buffer* buffer_{nullptr};
-      size_type idx_{};
+      size_type idx_{0};
     };
   }
 
@@ -313,52 +228,36 @@ namespace elib
     /**
      * @brief Copy constructor.
      */
-    circular_buffer(const circular_buffer& other) noexcept
-    {
-      *this = other;
-    }
+    constexpr circular_buffer(const circular_buffer& other) noexcept = default;
 
     /**
      * @brief Copy assignment operator.
      */
-    circular_buffer& operator=(const circular_buffer& other) noexcept
-    {
-      if (this == &other)
-        return *this;
-
-      // TODO: copy only initialized values
-      std::copy(other.data_.begin(), other.data_.end(), storage_begin());
-      size_ = other.size_;
-
-      first_ = storage_begin() + (other.first_ - other.storage_begin());
-      last_  = storage_begin() + (other.last_ - other.storage_begin());
-
-      return *this;
-    }
+    constexpr circular_buffer& operator=(const circular_buffer& other) noexcept = default;
 
     /**
      * @brief Move constructor.
      */
-    circular_buffer(circular_buffer&& other) noexcept
+    constexpr circular_buffer(circular_buffer&& other) noexcept
+      : data_{std::move(other.data_)}
+      , first_idx_{other.first_idx_}
+      , size_{other.size_}
     {
-      *this = std::move(other);
+      other.clear();
     }
 
     /**
      * @brief Move assignment operator.
      */
-    circular_buffer& operator=(circular_buffer&& other) noexcept
+    constexpr circular_buffer& operator=(circular_buffer&& other) noexcept
     {
       if (this == &other)
         return *this;
 
-      clear();
-
-      std::swap(data_, other.data_);
-      std::swap(size_, other.size_);
-
-      first_ = storage_begin() + (other.first_ - other.storage_begin());
-      last_  = storage_begin() + (other.last_ - other.storage_begin());
+      data_ = std::move(other.data_);
+      first_idx_ = other.first_idx_;
+      size_ = other.size_;
+      other.clear();
 
       return *this;
     }
@@ -367,20 +266,20 @@ namespace elib
      * @brief Constructs the buffer with an initializer list.
      */
     constexpr circular_buffer(const std::initializer_list<value_type> il)
-      : circular_buffer()
+      : data_{}
+      , first_idx_{0}
+      , size_{0}
     {
       if (il.size() > Capacity)
         return;
 
-      auto start = storage_begin();
+      auto it = data_.begin();
       for (auto&& value : il)
       {
-        *start = std::move(value);
-        ++start;
+        *it = std::move(value);
+        ++it;
       }
-
       size_ = il.size();
-      last_ = detail::add(last_, size_, storage_begin(), storage_end());
     }
 
     /**
@@ -388,147 +287,111 @@ namespace elib
      */
     template<typename T, std::size_t N>
     constexpr circular_buffer(const T (&array)[N])
-      : circular_buffer()
+      : data_{}
+      , first_idx_{0}
+      , size_{0}
     {
       static_assert(N <= Capacity, "Array size more than container capacity");
 
+      std::copy(array, array + N, data_.begin());
       size_ = N;
-      last_ = detail::add(last_, N, storage_begin(), storage_end());
-      std::copy(array, array + N, storage_begin());
     }
 
     /**
      * @brief Constructs the buffer from a pointer and size.
      */
-    circular_buffer(value_type* data, std::size_t size)
-      : circular_buffer()
+    constexpr circular_buffer(value_type* data, std::size_t size)
+      : data_{}
+      , first_idx_{0}
+      , size_{0}
     {
       if (!data || !size || size > Capacity)
         return;
 
+      std::copy(data, data + size, data_.begin());
       size_ = size;
-      last_ = detail::add(last_, size, storage_begin(), storage_end());
-      std::copy(data, data + size, storage_begin());
     }
 
     /**
      * @brief Returns an iterator to the beginning.
      */
-    constexpr iterator begin()
-    {
-      return iterator(this, 0);
-    }
+    constexpr iterator begin() { return iterator(this, 0); }
 
     /**
      * @brief Returns an iterator to the end.
      */
-    constexpr iterator end()
-    {
-      return iterator(this, size_);
-    }
+    constexpr iterator end() { return iterator(this, size_); }
 
     /**
      * @brief Returns a const iterator to the beginning.
      */
-    constexpr const_iterator begin() const
-    {
-      return const_iterator(this, 0);
-    }
+    constexpr const_iterator begin() const { return const_iterator(this, 0); }
 
     /**
      * @brief Returns a const iterator to the end.
      */
-    constexpr const_iterator end() const
-    {
-      return const_iterator(this, size_);
-    }
+    constexpr const_iterator end() const { return const_iterator(this, size_); }
 
     /**
      * @brief Returns a const iterator to the beginning.
      */
-    constexpr const_iterator cbegin() const
-    {
-      return begin();
-    }
+    constexpr const_iterator cbegin() const { return begin(); }
 
     /**
      * @brief Returns a const iterator to the end.
      */
-    constexpr const_iterator cend() const
-    {
-      return end();
-    }
+    constexpr const_iterator cend() const { return end(); }
 
     /**
      * @brief Access the first element.
      */
-    constexpr reference front()
-    {
-      return *first_;
-    }
+    constexpr reference front() { return data_[first_idx_]; }
 
     /**
      * @brief Access the first element (const).
      */
-    constexpr const_reference front() const
-    {
-      return *first_;
-    }
+    constexpr const_reference front() const { return data_[first_idx_]; }
 
     /**
      * @brief Access the last element.
      */
-    constexpr reference back()
-    {
-      return *((last_ == storage_begin() ? storage_end() : last_) - 1);
+    constexpr reference back() {
+      return data_[size_ > 0 ? (first_idx_ + size_ - 1) % Capacity : first_idx_];
     }
 
     /**
      * @brief Access the last element (const).
      */
-    constexpr const_reference back() const
-    {
-      return *((last_ == storage_begin() ? storage_end() : last_) - 1);
+    constexpr const_reference back() const {
+      return data_[size_ > 0 ? (first_idx_ + size_ - 1) % Capacity : first_idx_];
     }
 
     /**
      * @brief Returns the number of elements in the buffer.
      */
-    constexpr size_type size() const
-    {
-      return size_;
-    }
+    constexpr size_type size() const { return size_; }
 
     /**
      * @brief Returns the capacity of the buffer.
      */
-    constexpr size_type capacity() const
-    {
-      return Capacity;
-    }
+    constexpr size_type capacity() const { return Capacity; }
 
     /**
      * @brief Checks if the buffer is empty.
      */
-    constexpr bool empty() const
-    {
-      return !size();
-    }
+    constexpr bool empty() const { return size_ == 0; }
 
     /**
      * @brief Checks if the buffer is full.
      */
-    constexpr bool full() const
-    {
-      return size() == Capacity;
-    }
+    constexpr bool full() const { return size_ == Capacity; }
 
     /**
      * @brief Adds an element to the end of the buffer.
      * @deprecated Use push_back() instead.
      */
     template<typename T> [[deprecated("use push_back() instead")]]
-    bool push(T&& value)
+    constexpr bool push(T&& value)
     {
       return push_back(std::forward<T>(value));
     }
@@ -538,13 +401,12 @@ namespace elib
      * @return true if successful, false if buffer is full.
      */
     template<typename T>
-    bool push_back(T&& value)
+    constexpr bool push_back(T&& value)
     {
       if (full())
         return false;
 
-      *last_ = std::forward<T>(value);
-      detail::increment(last_, storage_begin(), storage_end());
+      data_[(first_idx_ + size_) % Capacity] = std::forward<T>(value);
       ++size_;
 
       return true;
@@ -554,14 +416,12 @@ namespace elib
      * @brief Removes the last element.
      * @return true if successful, false if buffer is empty.
      */
-    bool pop_back()
+    constexpr bool pop_back()
     {
       if (empty())
         return false;
 
-      detail::decrement(last_, storage_begin(), storage_end());
       --size_;
-
       return true;
     }
 
@@ -569,7 +429,7 @@ namespace elib
      * @brief Adds an element to the end, overwriting the oldest if full.
      */
     template<typename T>
-    void push_over(T&& value)
+    constexpr void push_over(T&& value)
     {
       if (full())
         pop_front();
@@ -582,15 +442,13 @@ namespace elib
      * @return true if successful, false if buffer is full.
      */
     template<typename T>
-    bool push_front(T&& value)
+    constexpr bool push_front(T&& value)
     {
       if (full())
         return false;
 
-      auto new_first = first_;
-      detail::decrement(new_first, storage_begin(), storage_end());
-      *new_first = std::forward<T>(value);
-      first_ = new_first;
+      first_idx_ = (first_idx_ > 0) ? first_idx_ - 1 : Capacity - 1;
+      data_[first_idx_] = std::forward<T>(value);
       ++size_;
 
       return true;
@@ -600,12 +458,12 @@ namespace elib
      * @brief Removes the first element.
      * @return true if successful, false if buffer is empty.
      */
-    bool pop_front()
+    constexpr bool pop_front()
     {
       if (empty())
         return false;
 
-      detail::increment(first_, storage_begin(), storage_end());
+      first_idx_ = (first_idx_ + 1) % Capacity;
       --size_;
 
       return true;
@@ -616,7 +474,7 @@ namespace elib
      * @deprecated Use pop_front() instead.
      */
     [[deprecated("use pop_front() instead")]]
-    bool pop()
+    constexpr bool pop()
     {
       return pop_front();
     }
@@ -626,7 +484,7 @@ namespace elib
      * @return Iterator pointing to the inserted value, or end() if the buffer is full.
      */
     template<typename T>
-    iterator insert(const_iterator pos, T&& value)
+    constexpr iterator insert(const_iterator pos, T&& value)
     {
       if (full())
         return end();
@@ -636,28 +494,22 @@ namespace elib
 
       if (index < elements_after)
       {
-        // Closer to the front: shift front elements left
-        auto new_first = first_;
-        detail::decrement(new_first, storage_begin(), storage_end());
-        first_ = new_first;
+        first_idx_ = (first_idx_ > 0) ? first_idx_ - 1 : Capacity - 1;
         ++size_;
 
         auto target = std::next(begin(), index);
-        // Move the displaced front elements
         std::move(std::next(begin()), std::next(target), begin());
         *target = std::forward<T>(value);
+
         return target;
       }
       else
       {
-        // Closer to the back: shift back elements right
-        detail::increment(last_, storage_begin(), storage_end());
         ++size_;
-
         auto target = std::next(begin(), index);
-        // Move the displaced back elements
         std::move_backward(target, std::prev(end()), end());
         *target = std::forward<T>(value);
+
         return target;
       }
     }
@@ -666,7 +518,7 @@ namespace elib
      * @brief Removes the element at the specified position.
      * @return Iterator following the removed element.
      */
-    iterator erase(const_iterator pos)
+    constexpr iterator erase(const_iterator pos)
     {
       if (pos == cend())
         return end();
@@ -677,14 +529,12 @@ namespace elib
 
       if (index < elements_after)
       {
-        // Closer to the front: shift front elements right to fill gap
         std::move_backward(begin(), target, std::next(target));
         pop_front();
         return std::next(begin(), index);
       }
       else
       {
-        // Closer to the back: shift back elements left to fill gap
         std::move(std::next(target), end(), target);
         pop_back();
         return std::next(begin(), index);
@@ -694,41 +544,18 @@ namespace elib
     /**
      * @brief Clears the buffer.
      */
-    void clear()
+    constexpr void clear()
     {
       size_  = 0;
-      first_ = last_ = storage_begin();
+      first_idx_ = 0;
     }
 
   private:
     storage data_{};
-
-    pointer first_{data_.data()};
-    pointer last_{data_.data()};
-
+    size_type first_idx_{0};
     size_type size_{0};
 
     friend iterator;
     friend const_iterator;
-
-    constexpr pointer storage_begin()
-    {
-      return data_.data();
-    }
-
-    constexpr const_pointer storage_begin() const
-    {
-      return data_.data();
-    }
-
-    constexpr pointer storage_end()
-    {
-      return data_.data() + data_.size();
-    }
-
-    constexpr const_pointer storage_end() const
-    {
-      return data_.data() + data_.size();
-    }
   };
 }

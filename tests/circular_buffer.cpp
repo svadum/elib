@@ -197,20 +197,20 @@ TEST_CASE("elib::circular_buffer: Iterator bidirectional traversal", "[circular_
     buf.push_back(30);
 
     auto it = buf.end();
-    
+
     REQUIRE(it == buf.end());
-    
+
     --it;
     REQUIRE(*it == 30);
-    
+
     --it;
     REQUIRE(*it == 20);
-    
+
     --it;
     REQUIRE(*it == 10);
-    
+
     REQUIRE(it == buf.begin());
-    
+
     // Going back up
     ++it;
     REQUIRE(*it == 20);
@@ -232,15 +232,15 @@ TEST_CASE("elib::circular_buffer: Reverse Iteration", "[circular_buffer]") {
 
 TEST_CASE("elib::circular_buffer: push_front wrap-around", "[circular_buffer]") {
     elib::circular_buffer<int, 3> buf;
-    
+
     REQUIRE(buf.push_front(1)); // [1]
     REQUIRE(buf.push_front(2)); // [2, 1]
     REQUIRE(buf.push_front(3)); // [3, 2, 1]
-    
+
     REQUIRE(buf.full());
     REQUIRE(buf.front() == 3);
     REQUIRE(buf.back() == 1);
-    
+
     // Verify order
     auto it = buf.begin();
     REQUIRE(*it++ == 3);
@@ -251,25 +251,25 @@ TEST_CASE("elib::circular_buffer: push_front wrap-around", "[circular_buffer]") 
 
 TEST_CASE("elib::circular_buffer: erase elements", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf{10, 20, 30, 40, 50};
-    
+
     // Erase closer to front (shifts front elements right)
     auto it = buf.erase(std::next(buf.begin(), 1)); // erase 20
     REQUIRE(buf.size() == 4);
     REQUIRE(*it == 30);
     REQUIRE(buf.front() == 10);
-    
+
     // Erase closer to back (shifts back elements left)
     it = buf.erase(std::next(buf.begin(), 2)); // erase 40
     REQUIRE(buf.size() == 3);
     REQUIRE(*it == 50);
     REQUIRE(buf.back() == 50);
-    
+
     // Erase first element
     it = buf.erase(buf.begin());
     REQUIRE(buf.size() == 2);
     REQUIRE(*it == 30);
     REQUIRE(buf.front() == 30);
-    
+
     // Erase last element
     it = buf.erase(std::next(buf.begin())); // erase 50
     REQUIRE(buf.size() == 1);
@@ -280,35 +280,35 @@ TEST_CASE("elib::circular_buffer: erase elements", "[circular_buffer]") {
 
 TEST_CASE("elib::circular_buffer: insert elements", "[circular_buffer]") {
     elib::circular_buffer<int, 5> buf;
-    
+
     // Insert into empty
     auto it = buf.insert(buf.end(), 10);
     REQUIRE(buf.size() == 1);
     REQUIRE(*it == 10);
-    
+
     // Insert at back
     it = buf.insert(buf.end(), 20);
     REQUIRE(buf.size() == 2);
     REQUIRE(*it == 20);
-    
+
     // Insert at front
     it = buf.insert(buf.begin(), 5);
     REQUIRE(buf.size() == 3);
     REQUIRE(*it == 5);
     REQUIRE(buf.front() == 5);
-    
+
     // Insert in middle (closer to front)
     it = buf.insert(std::next(buf.begin(), 1), 7);
     REQUIRE(buf.size() == 4);
     REQUIRE(*it == 7);
     REQUIRE(*std::next(buf.begin(), 2) == 10);
-    
+
     // Insert in middle (closer to back)
     it = buf.insert(std::next(buf.begin(), 3), 15);
     REQUIRE(buf.size() == 5);
     REQUIRE(*it == 15);
     REQUIRE(buf.back() == 20);
-    
+
     // Insert when full (should safely return end())
     it = buf.insert(buf.begin(), 1);
     REQUIRE(it == buf.end());
@@ -324,18 +324,18 @@ TEST_CASE("elib::circular_buffer: insert with wrap-around", "[circular_buffer]")
     buf.pop_front(); // Physical buffer is wrapped
     buf.push_back(4);
     buf.push_back(5);
-    buf.push_back(6); 
+    buf.push_back(6);
     // Logical state is now: [3, 4, 5, 6]
-    
+
     // Insert element closer to front, forcing wrap-around of displaced front elements
     auto it = buf.insert(std::next(buf.begin(), 1), 99);
     REQUIRE(buf.size() == 5);
     REQUIRE(*it == 99);
-    
+
     std::vector<int> expected = {3, 99, 4, 5, 6};
     std::vector<int> actual;
     for(auto v : buf) actual.push_back(v);
-    
+
     REQUIRE(actual == expected);
 }
 
@@ -348,7 +348,7 @@ TEST_CASE("elib::circular_buffer: linear search", "[circular_buffer]") {
     buf.pop_front(); // Physical buffer is wrapped
     buf.push_back(4);
     buf.push_back(5);
-    buf.push_back(6); 
+    buf.push_back(6);
 
     SECTION("non const it")
     {
@@ -362,4 +362,55 @@ TEST_CASE("elib::circular_buffer: linear search", "[circular_buffer]") {
         auto it = std::find(buf.cbegin(), buf.cend(), 5);
         REQUIRE(it != buf.cend());
     }
+}
+
+TEST_CASE("elib::circular_buffer: Pointer and size constructor", "[circular_buffer]") {
+    int arr[] = {100, 200, 300};
+    elib::circular_buffer<int, 5> buf(arr, 3);
+
+    REQUIRE(buf.size() == 3);
+    REQUIRE(buf.front() == 100);
+    REQUIRE(buf.back() == 300);
+}
+
+TEST_CASE("elib::circular_buffer: Copy semantics", "[circular_buffer]") {
+    elib::circular_buffer<int, 5> buf1;
+    buf1.push_back(10);
+    buf1.push_back(20);
+
+    // Copy Constructor
+    elib::circular_buffer<int, 5> buf2(buf1);
+    REQUIRE(buf2.size() == 2);
+    REQUIRE(buf2.front() == 10);
+    REQUIRE(buf2.back() == 20);
+
+    // Copy Assignment
+    elib::circular_buffer<int, 5> buf3;
+    buf3 = buf1;
+    REQUIRE(buf3.size() == 2);
+    REQUIRE(buf3.front() == 10);
+    REQUIRE(buf3.back() == 20);
+}
+
+TEST_CASE("elib::circular_buffer: Clear method", "[circular_buffer]") {
+    elib::circular_buffer<int, 3> buf{1, 2, 3};
+
+    REQUIRE(buf.size() == 3);
+    REQUIRE(buf.full());
+
+    buf.clear();
+
+    REQUIRE(buf.empty());
+    REQUIRE(buf.size() == 0);
+    REQUIRE(buf.capacity() == 3);
+}
+
+TEST_CASE("elib::circular_buffer: True constexpr evaluation", "[circular_buffer]") {
+    STATIC_REQUIRE([]() {
+        elib::circular_buffer<int, 5> buf{1, 2, 3};
+        auto buf2 = buf; // Test constexpr copy constructor
+        buf2.push_back(4);
+        buf2.pop_front();
+        return buf2.size() == 3 && buf2.front() == 2 && buf2.back() == 4;
+    }());
 }
