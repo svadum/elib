@@ -179,3 +179,100 @@ TEST_CASE("elib::array resize operations", "[array]") {
         REQUIRE(arr.size() == 0);
     }
 }
+
+TEST_CASE("elib::array copy and move semantics", "[array]") {
+    elib::array<int, 5> arr1{1, 2, 3};
+
+    // Copy Constructor
+    elib::array<int, 5> arr2(arr1);
+    REQUIRE(arr2.size() == 3);
+    REQUIRE(arr2[2] == 3);
+
+    // Copy Assignment
+    elib::array<int, 5> arr3;
+    arr3 = arr1;
+    REQUIRE(arr3.size() == 3);
+    REQUIRE(arr3[0] == 1);
+
+    // Move Constructor
+    elib::array<int, 5> arr4(std::move(arr1));
+    REQUIRE(arr4.size() == 3);
+    REQUIRE(arr1.size() == 0); // Refactored version clears size on move
+
+    // Move Assignment
+    elib::array<int, 5> arr5;
+    arr5 = std::move(arr2);
+    REQUIRE(arr5.size() == 3);
+    REQUIRE(arr2.size() == 0);
+}
+
+TEST_CASE("elib::array advanced constructors", "[array]") {
+    SECTION("C-style array constructor") {
+        int c_arr[] = {10, 20, 30};
+        elib::array<int, 5> arr1(c_arr);
+        REQUIRE(arr1.size() == 3);
+        REQUIRE(arr1.front() == 10);
+        REQUIRE(arr1.back() == 30);
+    }
+
+    SECTION("Iterator range constructor") {
+        std::array<int, 3> std_arr = {4, 5, 6};
+        elib::array<int, 5> arr2(std_arr.begin(), std_arr.end());
+        REQUIRE(arr2.size() == 3);
+        REQUIRE(arr2[1] == 5);
+    }
+}
+
+TEST_CASE("elib::array range and initializer list insert", "[array]") {
+    elib::array<int, 7> arr{1, 6, 7};
+
+    SECTION("Iterator range insert") {
+        std::array<int, 4> elems{2, 3, 4, 5};
+        arr.insert(arr.begin() + 1, elems.begin(), elems.end());
+        REQUIRE(arr.size() == 7);
+        REQUIRE(arr[1] == 2);
+        REQUIRE(arr[4] == 5);
+        REQUIRE(arr[5] == 6);
+    }
+
+    SECTION("Initializer list insert") {
+        arr.insert(arr.begin() + 1, {2, 3});
+        REQUIRE(arr.size() == 5);
+        REQUIRE(arr[1] == 2);
+        REQUIRE(arr[2] == 3);
+        REQUIRE(arr[3] == 6);
+    }
+}
+
+TEST_CASE("elib::array iterators and clear", "[array]") {
+    elib::array<int, 5> arr{1, 2, 3};
+
+    SECTION("Reverse iterators") {
+        REQUIRE(*arr.rbegin() == 3);
+        REQUIRE(*(arr.rend() - 1) == 1);
+
+        int sum = 0;
+        for(auto it = arr.rbegin(); it != arr.rend(); ++it) {
+            sum += *it;
+        }
+        REQUIRE(sum == 6);
+    }
+
+    SECTION("Clear method") {
+        arr.clear();
+        REQUIRE(arr.empty() == true);
+        REQUIRE(arr.size() == 0);
+        REQUIRE(arr.capacity() == 5);
+    }
+}
+
+// Compile-time tests to guarantee the constexpr refactoring works
+TEST_CASE("elib::array true constexpr evaluation", "[array]") {
+    STATIC_REQUIRE([]() {
+        elib::array<int, 5> arr{1, 2, 3};
+        auto arr2 = arr; // test constexpr copy
+        arr2.push_back(4); // test constexpr mutation
+        arr2.pop_back();
+        return arr2.size() == 3 && arr2.back() == 3;
+    }());
+}

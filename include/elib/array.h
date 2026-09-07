@@ -26,7 +26,7 @@ namespace elib
   /**
    * @brief A contiguous container with a fixed capacity but variable size.
    * @tparam Value The type of elements stored.
-   * @tparam Capacity The maximum number of elements the array can hold[cite: 6].
+   * @tparam Capacity The maximum number of elements the array can hold.
    */
   template<typename Value, std::size_t Capacity>
   class array
@@ -49,17 +49,18 @@ namespace elib
     using difference_type = typename storage::difference_type;
     using size_type       = typename storage::size_type;
 
-    /** @brief Default constructor. Creates an empty array[cite: 6]. */
+    /** @brief Default constructor. Creates an empty array. */
     constexpr array()
       : data_{}
-      , end_{data_.begin()}
+      , size_{0}
     {
     }
 
     /** @brief Copy constructor. */
     constexpr array(const array& other) noexcept
+      : data_{other.data_}
+      , size_{other.size_}
     {
-      *this = other;
     }
 
     /** @brief Copy assignment operator. */
@@ -69,15 +70,17 @@ namespace elib
         return *this;
 
       data_ = other.data_;
-      end_  = other.end_;
+      size_ = other.size_;
 
       return *this;
     }
 
     /** @brief Move constructor. */
     constexpr array(array&& other) noexcept
+      : data_{std::move(other.data_)}
+      , size_{other.size_}
     {
-      *this = std::move(other);
+      other.size_ = 0;
     }
 
     /** @brief Move assignment operator. */
@@ -86,20 +89,20 @@ namespace elib
       if (this == &other)
         return *this;
 
-      clear();
-
-      std::swap(data_, other.data_);
-      std::swap(end_, other.end_);
+      data_ = std::move(other.data_);
+      size_ = other.size_;
+      other.size_ = 0;
 
       return *this;
     }
 
     /**
      * @brief Constructs an array from an initializer list.
-     * @note Elements exceeding capacity are silently ignored[cite: 6].
+     * @note Elements exceeding capacity are silently ignored.
      */
     constexpr array(const std::initializer_list<value_type> il)
       : data_{}
+      , size_{0}
     {
       if (il.size() > Capacity)
         return;
@@ -111,51 +114,50 @@ namespace elib
         ++it;
       }
 
-      end_ = it;
+      size_ = il.size();
     }
 
     /**
      * @brief Constructs an array from a C-style array.
-     * @pre The size of the C-array must not exceed Capacity[cite: 6].
+     * @pre The size of the C-array must not exceed Capacity.
      */
     template<typename T, std::size_t N>
     constexpr array(const T (&array)[N])
       : data_{}
+      , size_{N}
     {
       static_assert(N <= Capacity, "Array size more than container capacity");
-
-      end_ = data_.begin() + N;
       std::copy(array, array + N, data_.begin());
     }
 
     /**
      * @brief Constructs an array from an iterator range.
-     * @note Copies at most Capacity elements[cite: 6].
+     * @note Copies at most Capacity elements.
      */
     template<typename InputIterator>
     constexpr array(InputIterator first, InputIterator last)
       : data_{}
+      , size_{0}
     {
-      const auto count = std::min(std::distance(first, last),
-                                  static_cast<typename std::iterator_traits<InputIterator>::difference_type>(Capacity));
-
-      std::copy_n(first, count, data_.begin());
-
-      end_ = data_.begin() + count;
+      size_ = std::min(
+        static_cast<size_type>(std::distance(first, last)),
+        Capacity
+      );
+      std::copy_n(first, size_, data_.begin());
     }
 
     // --- Iterators ---
     constexpr iterator begin() noexcept { return data_.begin(); }
-    constexpr iterator end() noexcept { return end_; }
+    constexpr iterator end() noexcept { return data_.begin() + size_; }
     constexpr const_iterator begin() const noexcept { return data_.begin(); }
-    constexpr const_iterator end() const noexcept { return end_; }
+    constexpr const_iterator end() const noexcept { return data_.begin() + size_; }
     constexpr const_iterator cbegin() const noexcept { return data_.cbegin(); }
-    constexpr const_iterator cend() const noexcept { return end_; }
-    constexpr reverse_iterator rbegin() noexcept { return reverse_iterator(end_); }
+    constexpr const_iterator cend() const noexcept { return data_.begin() + size_; }
+    constexpr reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
     constexpr reverse_iterator rend() noexcept { return data_.rend(); }
-    constexpr const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end_); }
+    constexpr const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
     constexpr const_reverse_iterator rend() const noexcept { return data_.rend(); }
-    constexpr const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end_); }
+    constexpr const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
     constexpr const_reverse_iterator crend() const noexcept { return data_.crend(); }
 
     // --- Element Access ---
@@ -169,16 +171,16 @@ namespace elib
     // --- Capacity ---
 
     /** @return The number of elements currently stored. */
-    constexpr size_type size() const noexcept { return end_ - data_.begin(); }
+    constexpr size_type size() const noexcept { return size_; }
 
     /** @return The maximum number of elements the array can store. */
     constexpr size_type capacity() const noexcept { return Capacity; }
 
     /** @return True if the array contains no elements. */
-    constexpr bool empty() const noexcept { return !size(); }
+    constexpr bool empty() const noexcept { return size_ == 0; }
 
     /** @return True if the array has reached its capacity. */
-    constexpr bool full() const noexcept { return size() == Capacity; }
+    constexpr bool full() const noexcept { return size_ == Capacity; }
 
     // --- Modifiers ---
 
@@ -196,23 +198,21 @@ namespace elib
       if (count > Capacity)
         return false;
 
-      auto new_end = data_.begin() + count;
-
       // Zero-fill new slots if expanding
-      if (count > size())
+      if (count > size_)
       {
-        std::fill(end_, new_end, value_type{});
+        std::fill(data_.begin() + size_, data_.begin() + count, value_type{});
       }
 
-      end_ = new_end;
+      size_ = count;
       return true;
     }
 
     /**
      * @brief Inserts an element at the specified position.
-     * @return Iterator to the inserted element, or end() on failure[cite: 6].
+     * @return Iterator to the inserted element, or end() on failure.
      */
-    constexpr iterator insert(iterator position, Value&& value) { return insert_item(position, value); }
+    constexpr iterator insert(iterator position, Value&& value) { return insert_item(position, std::move(value)); }
     constexpr iterator insert(iterator position, const Value& value) { return insert_item(position, value); }
 
     template<class InputIt>
@@ -222,21 +222,22 @@ namespace elib
         return end();
 
       const auto count             = std::distance(first, last);
-      const auto availableCapacity = std::distance(end_, data_.end());
+      const auto availableCapacity = Capacity - size_;
 
       if (count > availableCapacity)
         return end();
 
-      if (std::distance(pos, end_) > 0)
+      if (std::distance(pos, end()) > 0)
       {
-        auto src  = pos;
-        auto dest = std::next(pos, count);
+        auto src  = end() - 1;
+        auto dest = src + count;
 
-        while (src != end_)
+        while (src >= pos)
         {
           *dest = std::move(*src);
-          ++src;
-          ++dest;
+          if (src == pos) break;
+          --src;
+          --dest;
         }
       }
 
@@ -248,7 +249,7 @@ namespace elib
         ++first;
       }
 
-      std::advance(end_, count);
+      size_ += count;
       return pos;
     }
 
@@ -260,7 +261,7 @@ namespace elib
 
     /**
      * @brief Erases the element at the specified position.
-     * @return Iterator following the removed element[cite: 6].
+     * @return Iterator following the removed element.
      */
     constexpr iterator erase(const_iterator position)
     {
@@ -273,21 +274,22 @@ namespace elib
       iterator mutable_pos = begin() + (position - cbegin());
       iterator src         = mutable_pos + 1;
       iterator dest        = mutable_pos;
+      iterator end_it      = end();
 
-      while (src != end_)
+      while (src != end_it)
       {
         *dest = std::move(*src);
         ++src;
         ++dest;
       }
 
-      --end_;
-      return !empty() ? mutable_pos + 1 : end_;
+      --size_;
+      return mutable_pos;
     }
 
     /**
      * @brief Appends an element to the end of the array.
-     * @return True if inserted, false if the array is already full[cite: 6].
+     * @return True if inserted, false if the array is already full.
      */
     template<typename T>
     constexpr bool push_back(T&& value)
@@ -295,27 +297,27 @@ namespace elib
       if (full())
         return false;
 
-      *end_ = std::forward<T>(value);
-      ++end_;
+      data_[size_] = std::forward<T>(value);
+      ++size_;
 
       return true;
     }
 
     /**
      * @brief Removes the last element from the array.
-     * @return True if removed, false if empty[cite: 6].
+     * @return True if removed, false if empty.
      */
     constexpr bool pop_back() noexcept
     {
       if (empty())
         return false;
 
-      --end_;
+      --size_;
       return true;
     }
 
     /** @brief Clears all elements from the array. */
-    constexpr void clear() noexcept { end_ = data_.begin(); }
+    constexpr void clear() noexcept { size_ = 0; }
 
     constexpr reference operator[](size_type pos) noexcept { return data_[pos]; }
     constexpr const_reference operator[](size_type pos) const noexcept { return data_[pos]; }
@@ -334,29 +336,30 @@ namespace elib
 
   private:
     storage data_;
-    iterator end_{data_.begin()};
+    size_type size_{0};
 
     template<typename Iterator>
-    constexpr bool is_from_this(const Iterator& it)
+    constexpr bool is_from_this(const Iterator& it) const
     {
       return it >= begin() && it <= end();
     }
 
     template<typename ValueType>
-    iterator insert_item(iterator position, ValueType&& value)
+    constexpr iterator insert_item(iterator position, ValueType&& value)
     {
       if (!is_from_this(position) || full())
         return end();
 
-      if (position == end_)
+      iterator end_it = end();
+      if (position == end_it)
       {
-        *end_ = std::forward<ValueType>(value);
-        ++end_;
+        *end_it = std::forward<ValueType>(value);
+        ++size_;
         return position;
       }
 
-      auto src  = end_;
-      auto dest = end_;
+      auto src  = end_it;
+      auto dest = end_it;
 
       while (src != position)
       {
@@ -366,9 +369,9 @@ namespace elib
       }
 
       *position = std::forward<ValueType>(value);
-      ++end_;
+      ++size_;
 
-      return src;
+      return position;
     }
   };
 }
