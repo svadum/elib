@@ -215,15 +215,20 @@ namespace elib
     constexpr iterator insert(iterator position, Value&& value) { return insert_item(position, std::move(value)); }
     constexpr iterator insert(iterator position, const Value& value) { return insert_item(position, value); }
 
-    template<class InputIt>
-    constexpr iterator insert(iterator pos, InputIt first, InputIt last)
+    template<class Iterator>
+    constexpr iterator insert(iterator pos, Iterator first, Iterator last)
     {
       if (!is_from_this(pos))
         return end();
 
-      const auto count             = std::distance(first, last);
-      const auto availableCapacity = Capacity - size_;
+      if (size_ >= Capacity)
+        return end();
 
+      const auto count = std::distance(first, last);
+      if (count < 0)
+        return end();
+
+      const auto availableCapacity = static_cast<decltype(count)>(Capacity - size_);
       if (count > availableCapacity)
         return end();
 

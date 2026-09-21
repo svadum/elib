@@ -39,7 +39,7 @@ namespace elib::time
     return timers[index];
   }
 
-  timer::id_type registerTimerImpl(config::time_interval interval, timer::on_timeout callback, bool singleShot = false)
+  timer::id_type register_timer_impl(config::time_interval interval, timer::on_timeout callback, bool single_shot = false)
   {
     // NOTE: make sure timer::id_type type can represent entire timers range
     static_assert(config::max_timer_num <= std::numeric_limits<timer::id_type>::max());
@@ -51,7 +51,7 @@ namespace elib::time
       {
         timer.callback = std::move(callback);
         timer.interval = interval;
-        timer.single_shot = singleShot;
+        timer.single_shot = single_shot;
         timer.registered = true;
 
         return static_cast<timer::id_type>(index);
@@ -65,14 +65,14 @@ namespace elib::time
 
   timer timer::register_timer(config::time_interval interval, on_timeout callback)
   {
-    const timer::id_type tid = registerTimerImpl(interval, std::move(callback));
+    const timer::id_type tid = register_timer_impl(interval, std::move(callback));
 
     return timer{tid};
   }
 
   bool timer::single_shot(config::time_interval interval, on_timeout callback)
   {
-    const timer::id_type tid = registerTimerImpl(interval, std::move(callback), true);
+    const timer::id_type tid = register_timer_impl(interval, std::move(callback), true);
     const bool success = tid != empty_timer_id;
 
     if (success)

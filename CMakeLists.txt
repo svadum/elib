@@ -1,19 +1,14 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25...4.3)
+project(elib VERSION 2.6.0 LANGUAGES CXX)
 
-project(elib VERSION 2.5.4 LANGUAGES CXX)
-
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Option to build tests (default to OFF)
-option(ELIB_BUILD_TESTS "Build the test suite" OFF)
-
-configure_file("cmake/version.h.in" "${PROJECT_SOURCE_DIR}/include/elib/version.h" @ONLY)
+add_library(elib STATIC)
+add_library(elib::elib ALIAS elib)
 
 add_subdirectory(src)
 
-if(ELIB_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
+if(PROJECT_IS_TOP_LEVEL)
+    include(CTest)
+    if(BUILD_TESTING)
+        add_subdirectory(tests)
+    endif()
 endif()
-
-install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_PREFIX})

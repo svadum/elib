@@ -20,7 +20,7 @@ namespace elib::time
     elapsed_timer()  = default;
     ~elapsed_timer() = default;
 
-    bool isActive() const
+    bool is_active() const
     {
       return is_active_;
     }

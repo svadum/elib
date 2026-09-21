@@ -1,6 +1,3 @@
-add_library(elib STATIC)
-add_library(elib::elib ALIAS elib)
-
 set(ELIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(ELIB_IMPL_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include/elib")
 
@@ -27,7 +24,6 @@ target_sources(
             ${ELIB_IMPL_INCLUDE_DIR}/stream.h
             ${ELIB_IMPL_INCLUDE_DIR}/data/stream_ext.h
             ${ELIB_IMPL_INCLUDE_DIR}/utility.h
-            ${ELIB_IMPL_INCLUDE_DIR}/version.h
             ${ELIB_IMPL_INCLUDE_DIR}/time/core_clock.h
             ${ELIB_IMPL_INCLUDE_DIR}/time/system_clock.h
             ${ELIB_IMPL_INCLUDE_DIR}/time/timer.h
