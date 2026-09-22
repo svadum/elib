@@ -37,7 +37,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\inplace_function.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\optional.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\utility.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\event_loop.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\scope.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\elib\assert.h" />

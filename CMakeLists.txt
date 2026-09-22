@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25...4.3)
-project(elib VERSION 2.6.0 LANGUAGES CXX)
+project(elib VERSION 2.6.1 LANGUAGES CXX)
 
 add_library(elib STATIC)
 add_library(elib::elib ALIAS elib)
