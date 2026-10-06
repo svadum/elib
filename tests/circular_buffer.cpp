@@ -414,3 +414,100 @@ TEST_CASE("elib::circular_buffer: True constexpr evaluation", "[circular_buffer]
         return buf2.size() == 3 && buf2.front() == 2 && buf2.back() == 4;
     }());
 }
+
+TEST_CASE("elib::circular_buffer: push_slot_back", "[circular_buffer]") {
+    elib::circular_buffer<int, 3> buf;
+
+    // Allocate first slot
+    auto* ptr1 = buf.push_slot_back();
+    REQUIRE(ptr1 != nullptr);
+    *ptr1 = 10;
+    REQUIRE(buf.size() == 1);
+    REQUIRE(buf.front() == 10);
+    REQUIRE(buf.back() == 10);
+
+    // Allocate second and third slots
+    auto* ptr2 = buf.push_slot_back();
+    REQUIRE(ptr2 != nullptr);
+    *ptr2 = 20;
+
+    auto* ptr3 = buf.push_slot_back();
+    REQUIRE(ptr3 != nullptr);
+    *ptr3 = 30;
+
+    REQUIRE(buf.size() == 3);
+    REQUIRE(buf.full());
+    REQUIRE(buf.front() == 10);
+    REQUIRE(buf.back() == 30);
+
+    // Buffer is full, should return nullptr
+    auto* ptr4 = buf.push_slot_back();
+    REQUIRE(ptr4 == nullptr);
+    REQUIRE(buf.size() == 3); // Size remains unchanged
+}
+
+TEST_CASE("elib::circular_buffer: push_slot_front", "[circular_buffer]") {
+    elib::circular_buffer<int, 3> buf;
+
+    // Allocate first slot at front
+    auto* ptr1 = buf.push_slot_front();
+    REQUIRE(ptr1 != nullptr);
+    *ptr1 = 10;
+    REQUIRE(buf.size() == 1);
+    REQUIRE(buf.front() == 10);
+    REQUIRE(buf.back() == 10);
+
+    // Allocate second and third slots at front
+    auto* ptr2 = buf.push_slot_front();
+    REQUIRE(ptr2 != nullptr);
+    *ptr2 = 20;
+
+    auto* ptr3 = buf.push_slot_front();
+    REQUIRE(ptr3 != nullptr);
+    *ptr3 = 30;
+
+    REQUIRE(buf.size() == 3);
+    REQUIRE(buf.full());
+    // 30 was pushed last to the front, so it should be the first element
+    REQUIRE(buf.front() == 30);
+    REQUIRE(buf.back() == 10);
+
+    // Buffer is full, should return nullptr
+    auto* ptr4 = buf.push_slot_front();
+    REQUIRE(ptr4 == nullptr);
+    REQUIRE(buf.size() == 3);
+}
+
+TEST_CASE("elib::circular_buffer: push_slot wrap-around", "[circular_buffer]") {
+    elib::circular_buffer<int, 3> buf;
+
+    // Fill the buffer and pop to shift the internal first_idx_
+    buf.push_back(1);
+    buf.push_back(2);
+    buf.push_back(3);
+    buf.pop_front(); // Removes 1
+    buf.pop_front(); // Removes 2
+
+    REQUIRE(buf.size() == 1);
+    REQUIRE(buf.front() == 3);
+
+    // push_slot_back should now physically wrap around the internal array
+    auto* ptr1 = buf.push_slot_back();
+    REQUIRE(ptr1 != nullptr);
+    *ptr1 = 4;
+
+    auto* ptr2 = buf.push_slot_back();
+    REQUIRE(ptr2 != nullptr);
+    *ptr2 = 5;
+
+    REQUIRE(buf.full());
+    REQUIRE(buf.front() == 3);
+    REQUIRE(buf.back() == 5);
+
+    // Verify logical order via iterators
+    auto it = buf.begin();
+    REQUIRE(*it++ == 3);
+    REQUIRE(*it++ == 4);
+    REQUIRE(*it++ == 5);
+    REQUIRE(it == buf.end());
+}

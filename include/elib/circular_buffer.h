@@ -460,6 +460,36 @@ namespace elib
       return true;
     }
 
+  /**
+   * @brief Advances the buffer size and returns a pointer to the newly reserved slot.
+   * @return Pointer to the slot, or nullptr if the buffer is full.
+   */
+  constexpr value_type* push_slot_back()
+  {
+    if (full())
+      return nullptr;
+
+    const auto idx = (first_idx_ + size_) % Capacity;
+    ++size_;
+
+    return &data_[idx];
+  }
+
+  /**
+   * @brief Advances the buffer size at the front and returns a pointer to the newly reserved slot.
+   * @return Pointer to the slot, or nullptr if the buffer is full.
+   */
+  constexpr value_type* push_slot_front()
+  {
+    if (full())
+      return nullptr;
+
+    first_idx_ = (first_idx_ > 0) ? first_idx_ - 1 : Capacity - 1;
+    ++size_;
+
+    return &data_[first_idx_];
+  }
+
     /**
      * @brief Inserts an element at the specified position.
      * @return Iterator pointing to the inserted value, or end() if the buffer is full.
