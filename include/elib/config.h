@@ -20,9 +20,6 @@ namespace elib
       using system_clock_rep = std::uint32_t;
       using system_clock_period = std::milli;
 
-      // Timer configuration
-      using time_interval = std::chrono::milliseconds;
-
       inline constexpr std::size_t max_timer_num = 10;     // maximum active registered timers
     }
 
@@ -32,7 +29,7 @@ namespace elib
   namespace event::config
   {
     inline constexpr std::size_t max_event_loop_num = 10;    // maximum active registered event loops
-    inline constexpr std::size_t max_event_per_call_num = 25; // maximum amount of events that can be 
+    inline constexpr std::size_t max_event_per_call_num = 25; // maximum amount of events that can be
                                                           // processed during at a time
   }
 

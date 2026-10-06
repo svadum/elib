@@ -18,11 +18,12 @@ namespace elib::time
   {
   public:
     using clock = system_clock;
+    using interval_type = system_clock::duration;
     using id_type = std::uint32_t;
     using on_timeout = std::function<void()>;
 
-    static timer register_timer(config::time_interval interval, on_timeout callback);
-    static bool single_shot(config::time_interval interval, on_timeout callback);
+    static timer register_timer(interval_type interval, on_timeout callback);
+    static bool single_shot(interval_type interval, on_timeout callback);
     static void process_timers();
     static void unregister_timers();
 
@@ -35,8 +36,8 @@ namespace elib::time
     timer(timer &&other);
     timer &operator=(timer &&other);
 
-    void set_interval(config::time_interval interval);
-    config::time_interval interval() const;
+    void set_interval(interval_type interval);
+    interval_type interval() const;
 
     void set_callback(on_timeout callback);
 

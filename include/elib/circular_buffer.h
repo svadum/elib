@@ -388,16 +388,6 @@ namespace elib
 
     /**
      * @brief Adds an element to the end of the buffer.
-     * @deprecated Use push_back() instead.
-     */
-    template<typename T> [[deprecated("use push_back() instead")]]
-    constexpr bool push(T&& value)
-    {
-      return push_back(std::forward<T>(value));
-    }
-
-    /**
-     * @brief Adds an element to the end of the buffer.
      * @return true if successful, false if buffer is full.
      */
     template<typename T>
@@ -406,7 +396,8 @@ namespace elib
       if (full())
         return false;
 
-      data_[(first_idx_ + size_) % Capacity] = std::forward<T>(value);
+      const auto idx = (first_idx_ + size_) % Capacity;
+      data_[idx] = std::forward<T>(value);
       ++size_;
 
       return true;
@@ -467,16 +458,6 @@ namespace elib
       --size_;
 
       return true;
-    }
-
-    /**
-     * @brief Removes the first element.
-     * @deprecated Use pop_front() instead.
-     */
-    [[deprecated("use pop_front() instead")]]
-    constexpr bool pop()
-    {
-      return pop_front();
     }
 
     /**

@@ -41,10 +41,10 @@ namespace elib
     // --- Storage Strategy ---
     // If T is trivial (like int), we use direct storage (simple assignment).
     // If T is complex (std::string) or not default-constructible, we use a union (manual lifetime).
-    static constexpr bool is_simple_value = std::is_trivially_destructible_v<T> && 
-                                            std::is_default_constructible_v<T> && 
+    static constexpr bool is_simple_value = std::is_trivially_destructible_v<T> &&
+                                            std::is_default_constructible_v<T> &&
                                             std::is_copy_assignable_v<T>;
-    
+
     /// @brief Direct storage for trivially constructible/destructible types.
     struct direct_storage
     {
@@ -53,7 +53,7 @@ namespace elib
       template<typename... Args>
       void construct(Args&&... args)
       {
-        value = T(std::forward<Args>(args)...);
+        new (&value) T(std::forward<Args>(args)...);
       }
 
       void destroy() {} // No-op for trivial types
@@ -718,7 +718,7 @@ namespace elib
         // NOTE: save next as it's not valid after node deallocation
         node_type* next = node->next;
         node->storage.destroy();
-        pool_.deallocate(node); 
+        pool_.deallocate(node);
         node = next;
       }
 

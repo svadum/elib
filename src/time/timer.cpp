@@ -17,7 +17,7 @@ namespace elib::time
     bool registered{false};
     bool active{false};
     bool single_shot{false};
-    config::time_interval interval{0};
+    timer::interval_type interval{0};
     elapsed_timer<timer::clock> elapsed;
     timer::on_timeout callback;
   };
@@ -39,7 +39,7 @@ namespace elib::time
     return timers[index];
   }
 
-  timer::id_type register_timer_impl(config::time_interval interval, timer::on_timeout callback, bool single_shot = false)
+  timer::id_type register_timer_impl(timer::interval_type interval, timer::on_timeout callback, bool single_shot = false)
   {
     // NOTE: make sure timer::id_type type can represent entire timers range
     static_assert(config::max_timer_num <= std::numeric_limits<timer::id_type>::max());
@@ -63,14 +63,14 @@ namespace elib::time
     return empty_timer_id;
   }
 
-  timer timer::register_timer(config::time_interval interval, on_timeout callback)
+  timer timer::register_timer(interval_type interval, on_timeout callback)
   {
     const timer::id_type tid = register_timer_impl(interval, std::move(callback));
 
     return timer{tid};
   }
 
-  bool timer::single_shot(config::time_interval interval, on_timeout callback)
+  bool timer::single_shot(interval_type interval, on_timeout callback)
   {
     const timer::id_type tid = register_timer_impl(interval, std::move(callback), true);
     const bool success = tid != empty_timer_id;
@@ -164,12 +164,12 @@ namespace elib::time
     return *this;
   }
 
-  void timer::set_interval(config::time_interval interval)
+  void timer::set_interval(interval_type interval)
   {
     get_handle(id_).interval = interval;
   }
 
-  config::time_interval timer::interval() const
+  timer::interval_type timer::interval() const
   {
     return get_handle(id_).interval;
   }
